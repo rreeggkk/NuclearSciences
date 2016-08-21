@@ -1,0 +1,14 @@
+#Blocks
+tile.nuclearsciences.radioactiveStone.name=Radioactive Stone
+tile.nuclearsciences.rtg.name=Radioisotope Thermoelectric Generator
+
+#Items
+item.nuclearsciences.material.name=Lump of Material
+item.nuclearsciences.irpanel.name=IR Photovoltaic Panel Upgrade
+item.nuclearsciences.stirling.name=Stirling Cycle Generator Upgrade
+
+#Containers
+container.nuclearsciences.rtg.name=RTG
+
+#Creative Tab
+itemGroup.tab.nuclearsciences.name=Nuclear Sciences

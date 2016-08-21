@@ -1,0 +1,16 @@
+[
+{
+  "modid": "nuclearsciences",
+  "name": "Nuclear Sciences",
+  "description": "A Nuclear Power Systems mod focused on realism.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["rreeggkk"],
+  "credits": "The TESLA API for the power system.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": ["tesla"]
+}
+]

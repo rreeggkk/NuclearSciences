@@ -1,0 +1,14 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "textures": {
+       "top": "nuclearsciences:blocks/rtg_top",
+       "side": "nuclearsciences:blocks/rtg_side"
+    },
+    "model": "nuclearsciences:rtg"
+  },
+  "variants": {
+    "normal": [{}],
+    "inventory": [{}]
+  }
+}

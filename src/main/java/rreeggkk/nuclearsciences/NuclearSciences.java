@@ -25,7 +25,7 @@ public class NuclearSciences {
 	
 	public Logger logger;
 	
-	@SidedProxy(clientSide = "io.github.rreeggkk.nuclearsciences.proxy.ClientProxy", serverSide = "io.github.rreeggkk.nuclearsciences.proxy.ServerProxy")
+	@SidedProxy(clientSide = "rreeggkk.nuclearsciences.proxy.ClientProxy", serverSide = "rreeggkk.nuclearsciences.proxy.ServerProxy")
     public static CommonProxy proxy;
 	
 	public CreativeTabs tab;

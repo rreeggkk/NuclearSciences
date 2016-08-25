@@ -6,6 +6,7 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import rreeggkk.nuclearsciences.NuclearSciences;
+import rreeggkk.nuclearsciences.client.gui.util.GuiUtil;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.inventory.ContainerHydraulicSeparator;
 import scala.actors.threadpool.Arrays;
@@ -32,11 +33,10 @@ public class GuiHydraulicSeparator extends GuiContainer {
 		mc.getTextureManager().bindTexture(mainGUITexture);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 		
-		//GuiUtil.drawFluid(fluid, manager);
-		
-		drawTexturedModalRect(guiLeft + 8, guiTop + 7, 176, 88, 16, 72);
-		
-		drawTexturedModalRect(guiLeft + 152, guiTop + 7 + (int)(71*(1-container.tile.getEnergy().getFraction())), 176, 17, 16, (int)(71*container.tile.getEnergy().getFraction()));
+		GuiUtil.guiFluidTank(container.tile.getTank(), guiLeft + 7, guiTop + 6);
+		GuiUtil.guiEnergyMeter(container.tile.getEnergy(), guiLeft + 151, guiTop + 6);
+
+		mc.getTextureManager().bindTexture(mainGUITexture);
 
 		drawTexturedModalRect(guiLeft + 77, guiTop + 36, 176, 0, (int)(24 * container.getCompletion()), 17);
 	}
@@ -45,6 +45,7 @@ public class GuiHydraulicSeparator extends GuiContainer {
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
+		
 		String s = container.tile.hasCustomName() ? container.tile
 				.getName() : I18n.format(
 				container.tile.getName(), new Object[0]);

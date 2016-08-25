@@ -7,6 +7,7 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 import rreeggkk.nuclearsciences.NuclearSciences;
+import rreeggkk.nuclearsciences.client.gui.util.GuiUtil;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.inventory.ContainerRTG;
 import rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
@@ -35,7 +36,7 @@ public class GuiRTG extends GuiContainer {
 		mc.getTextureManager().bindTexture(mainGUITexture);
 		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 		
-		drawTexturedModalRect(guiLeft + 154, guiTop + 7 + (int)(71*(1-container.tile.getEnergy().getFraction())), 176, 0, 16, (int)(71*container.tile.getEnergy().getFraction()));
+		GuiUtil.guiEnergyMeter(container.tile.getEnergy(), guiLeft + 153, guiTop + 6);
 	}
 	
 	

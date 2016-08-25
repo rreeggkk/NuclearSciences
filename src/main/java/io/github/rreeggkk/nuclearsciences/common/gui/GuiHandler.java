@@ -1,7 +1,10 @@
 package io.github.rreeggkk.nuclearsciences.common.gui;
 
+import io.github.rreeggkk.nuclearsciences.client.gui.inventory.GuiHydraulicSeparator;
 import io.github.rreeggkk.nuclearsciences.client.gui.inventory.GuiRTG;
+import io.github.rreeggkk.nuclearsciences.common.inventory.ContainerHydraulicSeparator;
 import io.github.rreeggkk.nuclearsciences.common.inventory.ContainerRTG;
+import io.github.rreeggkk.nuclearsciences.common.tile.TileEntityHydraulicSeparator;
 import io.github.rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -11,7 +14,8 @@ import net.minecraftforge.fml.common.network.IGuiHandler;
 
 public class GuiHandler implements IGuiHandler {
 
-	public final static int RTG = 0; 
+	public static final int RTG = 0;
+	public static final int HYDRAULIC_SEPARATOR = 1; 
 
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
@@ -20,6 +24,8 @@ public class GuiHandler implements IGuiHandler {
 			switch(ID) {
 				case RTG:
 					return new ContainerRTG(player.inventory, (TileEntityRTG)tile);
+				case HYDRAULIC_SEPARATOR:
+					return new ContainerHydraulicSeparator(player.inventory, (TileEntityHydraulicSeparator)tile);
 				default:
 					return null;
 			}
@@ -34,6 +40,8 @@ public class GuiHandler implements IGuiHandler {
 			switch(ID) {
 				case RTG:
 					return new GuiRTG(new ContainerRTG(player.inventory, (TileEntityRTG)tile));
+				case HYDRAULIC_SEPARATOR:
+					return new GuiHydraulicSeparator(new ContainerHydraulicSeparator(player.inventory, (TileEntityHydraulicSeparator)tile));
 				default:
 					return null;
 			}

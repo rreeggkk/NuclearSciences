@@ -8,9 +8,9 @@ import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.fml.common.Optional;
 
 @Optional.InterfaceList({
-	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaConsumer", modid="TESLA"),
-	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaProducer", modid="TESLA"),
-	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaHolder", modid="TESLA")
+	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaConsumer", modid="tesla"),
+	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaProducer", modid="tesla"),
+	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaHolder", modid="tesla")
 })
 public class EnergyContainer implements ITeslaConsumer, ITeslaProducer, ITeslaHolder, INBTSerializable<NBTTagCompound> {
 

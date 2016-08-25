@@ -2,6 +2,7 @@ package io.github.rreeggkk.nuclearsciences.proxy;
 
 import io.github.rreeggkk.nuclearsciences.NuclearSciences;
 import io.github.rreeggkk.nuclearsciences.common.block.ModBlocks;
+import io.github.rreeggkk.nuclearsciences.common.crafting.hydraulic.HydraulicSeparatorCraftingHandler;
 import io.github.rreeggkk.nuclearsciences.common.creativetab.ModCreativeTab;
 import io.github.rreeggkk.nuclearsciences.common.element.ElementRegister;
 import io.github.rreeggkk.nuclearsciences.common.gui.GuiHandler;
@@ -28,7 +29,7 @@ public abstract class CommonProxy {
 	}
 
 	public void init(FMLInitializationEvent e) {
-
+		HydraulicSeparatorCraftingHandler.initRecipies();
 	}
 
 	public void postInit(FMLPostInitializationEvent e) {

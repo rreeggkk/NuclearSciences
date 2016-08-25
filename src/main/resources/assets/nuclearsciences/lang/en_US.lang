@@ -1,6 +1,7 @@
 #Blocks
 tile.nuclearsciences.radioactiveStone.name=Radioactive Stone
 tile.nuclearsciences.rtg.name=Radioisotope Thermoelectric Generator
+tile.nuclearsciences.hydraulicSeparator.name=Hydraulic Separator
 
 #Items
 item.nuclearsciences.material.name=Lump of Material
@@ -9,6 +10,10 @@ item.nuclearsciences.stirling.name=Stirling Cycle Generator Upgrade
 
 #Containers
 container.nuclearsciences.rtg.name=RTG
+container.nuclearsciences.hydraulicseparator.name=Hydraulic Separator
+
+#Text
+text.nuclearsciences.hydraulicSeparator.mBWater=mB of Water
 
 #Creative Tab
 itemGroup.tab.nuclearsciences.name=Nuclear Sciences

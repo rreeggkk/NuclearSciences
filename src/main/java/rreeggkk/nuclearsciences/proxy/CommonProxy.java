@@ -6,6 +6,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.common.block.ModBlocks;
+import rreeggkk.nuclearsciences.common.crafting.ModCrafting;
 import rreeggkk.nuclearsciences.common.crafting.hydraulic.HydraulicSeparatorCraftingHandler;
 import rreeggkk.nuclearsciences.common.creativetab.ModCreativeTab;
 import rreeggkk.nuclearsciences.common.element.ElementRegister;
@@ -29,6 +30,7 @@ public abstract class CommonProxy {
 	}
 
 	public void init(FMLInitializationEvent e) {
+		ModCrafting.init();
 		HydraulicSeparatorCraftingHandler.initRecipies();
 	}
 

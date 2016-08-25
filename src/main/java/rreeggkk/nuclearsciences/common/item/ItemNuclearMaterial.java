@@ -47,7 +47,7 @@ public class ItemNuclearMaterial extends ItemNSBase {
 				if (GuiScreen.isCtrlKeyDown() || percent.multiply(hundred).compareTo(new Apfloat(0.01)) >= 0) {
 					tooltip.add(e.getKey().getFullName()
 							+ ": "
-							+ TextUtil.getUnitString(e.getValue(), 16, "g", true)
+							+ TextUtil.getUnitString(e.getValue(), 16, "g", true, true)
 							+ " "
 							+ String.format("%.2f", percent.doubleValue()) + "%");
 				} else {
@@ -59,7 +59,7 @@ public class ItemNuclearMaterial extends ItemNSBase {
 				tooltip.add(I18n.format("text.nuclearsciences.material." + (Minecraft.IS_RUNNING_ON_MAC ? "command" : "control")));
 			}
 
-			tooltip.add(I18n.format("text.nuclearsciences.material.totalMass", TextUtil.getUnitString(totalWeight, 16, "g", true)));
+			tooltip.add(I18n.format("text.nuclearsciences.material.totalMass", TextUtil.getUnitString(totalWeight, 16, "g", true, true)));
 		}
 	}
 

@@ -1,6 +1,9 @@
 package rreeggkk.nuclearsciences.common.util;
 
+import java.math.RoundingMode;
+
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 
 import rreeggkk.nuclearsciences.common.Constants;
 
@@ -38,7 +41,7 @@ public class TextUtil {
 	private static final String[] METRIC_PREFIXES = new String[]{"y", "z", "a", "f", "p", "n", "µ", "m", "", "k", "M", "G", "T", "P", "E", "Z", "Y"};
 	private static final int METRIC_PREFIXES_ZERO = 8;
 	
-	public static String getUnitString(Apfloat base, long finalPrecision, String unit, boolean addSpace) {
+	public static String getUnitString(Apfloat base, long finalPrecision, String unit, boolean addSpace, boolean round) {
 		int prefix = 0;
 		while (prefix < 8 && base.compareTo(new Apfloat(1000, Constants.PRECISION))>0) {
 			prefix++;
@@ -48,6 +51,11 @@ public class TextUtil {
 			prefix--;
 			base = base.multiply(new Apfloat(1000, Constants.PRECISION)).precision(Constants.PRECISION);
 		}
+		
+		if (round) {
+			base = ApfloatMath.round(base, finalPrecision, RoundingMode.HALF_UP);
+		}
+		
 		return base.precision(finalPrecision).toString(!(base.compareTo(new Apfloat(1000, Constants.PRECISION))>0 || base.compareTo(new Apfloat(1, Constants.PRECISION))<0)) + (addSpace ? " " : "") + METRIC_PREFIXES[prefix + METRIC_PREFIXES_ZERO] + unit;
 	}
 }

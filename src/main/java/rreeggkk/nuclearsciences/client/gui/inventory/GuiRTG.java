@@ -50,7 +50,7 @@ public class GuiRTG extends GuiContainer {
 				xSize / 2 - fontRendererObj.getStringWidth(s) / 2, 10,
 				4210752);
 		
-		String rft = TextUtil.getUnitString(container.tile.getEnergyPerTick(), 5, NuclearSciences.instance.config.energyUnit + "/t", true);
+		String rft = TextUtil.getUnitString(container.tile.getEnergyPerTick(), 5, NuclearSciences.instance.config.energyUnit + "/t", true, true);
 		fontRendererObj.drawString(rft,
 				37, 28,
 				4210752);

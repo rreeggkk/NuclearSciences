@@ -1,26 +1,23 @@
 package rreeggkk.nuclearsciences.common.item;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import rreeggkk.nuclearsciences.NuclearSciences;
+import java.util.List;
 
-public class ItemRTGUpgradeBase extends Item implements RTGUpgrade {
+import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+
+public class ItemRTGUpgradeBase extends ItemNSBase implements RTGUpgrade {
 	
 	private double eff;
 	
-	public ItemRTGUpgradeBase(double eff) {
+	public ItemRTGUpgradeBase(double eff, String name) {
+		super(name);
 		this.eff = eff;
-		
-		setCreativeTab(NuclearSciences.instance.tab);
 	}
-
-	@SideOnly(Side.CLIENT)
-	public void initModel() {
-		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "inventory"));
+	
+	@Override
+	public void addInformation(ItemStack stack, EntityPlayer playerIn, List<String> tooltip, boolean advanced) {
+		tooltip.add(I18n.format("text.nuclearsciences.rtgupgrade.tooltip", eff*100));
 	}
 
 	@Override

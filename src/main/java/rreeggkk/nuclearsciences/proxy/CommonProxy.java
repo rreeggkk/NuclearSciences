@@ -4,6 +4,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.relauncher.Side;
 import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.common.block.ModBlocks;
 import rreeggkk.nuclearsciences.common.crafting.ModCrafting;
@@ -25,8 +26,6 @@ public abstract class CommonProxy {
 		ModItems.init();
 		
 		NetworkRegistry.INSTANCE.registerGuiHandler(NuclearSciences.instance, new GuiHandler());
-
-		//ModCrafting.init();
 	}
 
 	public void init(FMLInitializationEvent e) {
@@ -37,4 +36,6 @@ public abstract class CommonProxy {
 	public void postInit(FMLPostInitializationEvent e) {
 
 	}
+	
+	public abstract Side getSide();
 }

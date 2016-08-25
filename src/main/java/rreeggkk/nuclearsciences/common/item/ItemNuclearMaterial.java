@@ -9,43 +9,29 @@ import org.apfloat.Apfloat;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.util.Constants.NBT;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
 import rreeggkk.nuclearsciences.common.nuclear.registry.IsotopeRegistry;
 import rreeggkk.nuclearsciences.common.util.MapUtil;
 import rreeggkk.nuclearsciences.common.util.TextUtil;
 
-public class ItemNuclearMaterial extends Item {
+public class ItemNuclearMaterial extends ItemNSBase {
 	public ItemNuclearMaterial() {
-		setUnlocalizedName(Constants.MOD_ID + ".material");
-		setRegistryName("material");
-		setMaxStackSize(1);
-		setCreativeTab(NuclearSciences.instance.tab);
-		GameRegistry.register(this);
-	}
+		super("material");
 
-	@SideOnly(Side.CLIENT)
-	public void initModel() {
-		ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "inventory"));
+		setMaxStackSize(1);
 	}
 
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List<String> tooltip, boolean advanced) {
 		if (!GuiScreen.isShiftKeyDown()) {
-			tooltip.add("Hold " + TextUtil.YELLOW + "SHIFT"
-					+ TextUtil.LIGHT_GRAY + " to see more data");
+			tooltip.add(I18n.format("text.nuclearsciences.material.shift"));
 		} else {			
 			Map<AIsotope<?,?>, Apfloat> metalMap = getContentsMass(stack);
 			Apfloat totalWeight = getTotalMass(metalMap);
@@ -70,11 +56,10 @@ public class ItemNuclearMaterial extends Item {
 			}
 
 			if (ctrlNeedsDisplay) {
-				tooltip.add("Hold " + TextUtil.YELLOW + (Minecraft.IS_RUNNING_ON_MAC ? "COMMAND" : "CONTROL")
-						+ TextUtil.LIGHT_GRAY + " to see small items");
+				tooltip.add(I18n.format("text.nuclearsciences.material." + (Minecraft.IS_RUNNING_ON_MAC ? "command" : "control")));
 			}
 
-			tooltip.add("Total mass: " + TextUtil.getUnitString(totalWeight, 16, "g", true));
+			tooltip.add(I18n.format("text.nuclearsciences.material.totalMass", TextUtil.getUnitString(totalWeight, 16, "g", true)));
 		}
 	}
 

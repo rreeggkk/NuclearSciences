@@ -55,7 +55,7 @@ public class GuiRTG extends GuiContainer {
 				37, 28,
 				4210752);
 		
-		String temp = "Temperature: " + TemperatureUtil.convertFromKelvin(container.tile.getInternalTemperature()).precision(6).toString(true) + NuclearSciences.instance.config.temperatureUnit;
+		String temp = I18n.format("text.nuclearsciences.rtg.temp", TemperatureUtil.convertFromKelvin(container.tile.getInternalTemperature()).precision(6).toString(true) + NuclearSciences.instance.config.temperatureUnit);
 		fontRendererObj.drawString(temp,
 				37, 44,
 				4210752);
@@ -63,7 +63,7 @@ public class GuiRTG extends GuiContainer {
 			mc.displayGuiScreen(null);
 		}
 		
-		String eff = "Efficiency: " + container.tile.getEfficiency().multiply(new Apfloat(100)).precision(4).toString(true) + "%";
+		String eff = I18n.format("text.nuclearsciences.rtg.eff", container.tile.getEfficiency().multiply(new Apfloat(100)).precision(4).toString(true) + "%");
 		fontRendererObj.drawString(eff,
 				37, 60,
 				4210752);

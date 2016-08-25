@@ -12,8 +12,17 @@ item.nuclearsciences.stirling.name=Stirling Cycle Generator Upgrade
 container.nuclearsciences.rtg.name=RTG
 container.nuclearsciences.hydraulicseparator.name=Hydraulic Separator
 
-#Text
+#UI
 text.nuclearsciences.hydraulicSeparator.mBWater=mB of Water
+text.nuclearsciences.rtg.temp=Temperature: %s
+text.nuclearsciences.rtg.eff=Efficiency: %s
+
+#Tooltips
+text.nuclearsciences.rtgupgrade.tooltip=%.4f%% Carnot Efficiency
+text.nuclearsciences.material.shift=Hold §eSHIFT§7 to see more data
+text.nuclearsciences.material.command=Hold §eCOMMAND§7 to see more data
+text.nuclearsciences.material.control=Hold §eCONTROL§7 to see more data
+text.nuclearsciences.material.totalMass=Total Mass: %s
 
 #Creative Tab
 itemGroup.tab.nuclearsciences.name=Nuclear Sciences

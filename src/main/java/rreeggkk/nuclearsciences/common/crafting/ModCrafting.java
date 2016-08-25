@@ -6,10 +6,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.common.block.ModBlocks;
+import rreeggkk.nuclearsciences.common.crafting.material.AdditionRecipe;
+import rreeggkk.nuclearsciences.common.crafting.material.HalvingRecipe;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 
 public class ModCrafting {
 	public static void init() {
+		
+		GameRegistry.addRecipe(new AdditionRecipe());
+		GameRegistry.addRecipe(new HalvingRecipe());
+		
 		if (NuclearSciences.instance.config.vanillaRecipe) {
 			GameRegistry.addRecipe(new ItemStack(ModBlocks.rtg), 
 					"igi",

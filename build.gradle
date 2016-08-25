@@ -14,35 +14,44 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-ext.configFile = file "build.properties"
+ext.configFile = file "gradle.properties"
 configFile.withReader {
     def prop = new Properties()
     prop.load(it)
     project.ext.config = new ConfigSlurper().parse prop
 }
 
-version = config.mc_version + "-" + config.mod_version + "-" + config.build_number
-group= config.package_group
-archivesBaseName = config.mod_name
+version = "${mc_version}-${mod_version}.${build_number}"
+group= "${package_group}"
+archivesBaseName = "${mod_name}"
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 minecraft {
-    version = config.mc_version + "-" + config.forge_version
+    version = "${mc_version}-${forge_version}"
     runDir = "run"
 
     mappings = "snapshot_20160518"
 }
 
 repositories {
-
     maven {
-
         url 'http://maven.epoxide.xyz'
     }
+    maven {
+		url "http://dvs1.progwml6.com/files/maven"
+  	}
 }
 
 dependencies {
-	compile 'net.darkhax.tesla:Tesla:1.10.2-1.2.1.46'
+	compile "net.darkhax.tesla:Tesla:${tesla_version}"
 	compile group: 'org.apfloat', name: 'apfloat', version: '1.8.2'
+	
+	// compile against the JEI API
+ 	deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}:api"
+ 	// at runtime, use the full JEI jar
+ 	runtime "mezz.jei:jei_${mc_version}:${jei_version}"
 }
 
 processResources

@@ -14,6 +14,7 @@ import io.github.rreeggkk.nuclearsciences.common.nuclear.simulation.DecaySimulat
 import io.github.rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import io.github.rreeggkk.nuclearsciences.common.util.CompatUtil;
 import io.github.rreeggkk.nuclearsciences.common.util.TemperatureUtil;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -28,6 +29,8 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 
 public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
+	
+	public static final Apfloat maxTemperature = new Apfloat(1273.15);
 
 	private ItemStack[] inventory;
 	private EnergyContainer energy;
@@ -45,14 +48,21 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 
 		if (!worldObj.isRemote) {
 			
+			if (temperature.compareTo(maxTemperature)>0) {
+				IBlockState newBlock = CompatUtil.getMoltenRTGFluidBlock();
+				worldObj.setBlockState(getPos(), newBlock, 3);
+				worldObj.notifyBlockOfStateChange(getPos(), newBlock.getBlock());
+				return;
+			}
+		
 			Apfloat deltaHeat = new Apfloat(0, Constants.PRECISION);
-			Apfloat heatCapacity = new Apfloat(1, Constants.PRECISION);
+			Apfloat heatCapacity = new Apfloat(100, Constants.PRECISION);
 			
 			if (inventory[0] != null && inventory[0].stackSize>0 && inventory[0].getItem() == ModItems.nuclearMaterial) {
 				HashMap<String, Apfloat> molarContents = ModItems.nuclearMaterial.getContents(inventory[0]);
 				deltaHeat = DecaySimulation.simulateDecay(molarContents).precision(Constants.PRECISION);
 				ModItems.nuclearMaterial.setContents(inventory[0], molarContents);
-				heatCapacity = ModItems.nuclearMaterial.getHeatCapacity(molarContents);
+				heatCapacity = heatCapacity.add(ModItems.nuclearMaterial.getHeatCapacity(molarContents)).precision(Constants.PRECISION);
 			}
 			
 			Apfloat q = temperature.subtract(TemperatureUtil.AMBIENT).multiply(getThermalConductivity());
@@ -66,9 +76,9 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 			
 			energy.givePower(intEnergy.longValue(), false);
 			
-			temperature = temperature.add(deltaHeat.divide(heatCapacity));
-			
 			CompatUtil.tryPushEnergyFrom(worldObj, pos, energy);
+			
+			temperature = temperature.add(deltaHeat.divide(heatCapacity));
 		}
 
 		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
@@ -92,8 +102,16 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 		}
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
-		partialEnergy = new Apfloat(compound.getString("PartialEnergy"), Constants.PRECISION);
-		temperature = new Apfloat(compound.getString("Temp"), Constants.PRECISION);
+		if (compound.hasKey("PartialEnergy")) {
+			partialEnergy = new Apfloat(compound.getString("PartialEnergy"), Constants.PRECISION);
+		} else {
+			partialEnergy = new Apfloat(0, Constants.PRECISION);
+		}
+		if (compound.hasKey("Temp")) {
+			temperature = new Apfloat(compound.getString("Temp"), Constants.PRECISION);
+		} else {
+			temperature = TemperatureUtil.AMBIENT;
+		}
 	}
 
 	@Override

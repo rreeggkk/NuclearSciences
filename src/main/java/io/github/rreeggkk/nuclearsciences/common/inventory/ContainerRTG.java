@@ -2,6 +2,7 @@ package io.github.rreeggkk.nuclearsciences.common.inventory;
 
 import io.github.rreeggkk.nuclearsciences.common.inventory.slot.MachineSlot;
 import io.github.rreeggkk.nuclearsciences.common.item.ModItems;
+import io.github.rreeggkk.nuclearsciences.common.item.RTGUpgrade;
 import io.github.rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -22,7 +23,7 @@ public class ContainerRTG extends Container {
 
 		tile = tilee;
 		addSlotToContainer(new MachineSlot(tilee, 0, 15, 29));
-		addSlotToContainer(new MachineSlot(tilee, 1, 15, 53));
+		addSlotToContainer(new MachineSlot(tilee, 1, 15, 53, 1));
 
 		for (int x = 0; x < 9; x++) {
 			addSlotToContainer(new Slot(player, x, 8 + 18 * x + playerInvOffX,
@@ -90,7 +91,15 @@ public class ContainerRTG extends Container {
 			} else if (itemstack1.getItem() == ModItems.nuclearMaterial
 					&& slotNum >= 2
 					&& slotNum < 38) {
+				
 				if (!mergeItemStack(itemstack1, 0, 1, false)) {
+					return null;
+				}
+			} else if (itemstack1.getItem() instanceof RTGUpgrade
+					&& slotNum >= 2
+					&& slotNum < 38) {
+				if (!inventorySlots.get(1).getHasStack()) {
+					((Slot)inventorySlots.get(1)).putStack(inventorySlots.get(slotNum).getStack().splitStack(1));
 					return null;
 				}
 			} else if (slotNum >= 2 && slotNum < 11) {

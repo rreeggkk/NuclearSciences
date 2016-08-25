@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 
 import io.github.rreeggkk.nuclearsciences.common.energy.EnergyContainer;
 import net.darkhax.tesla.api.ITeslaConsumer;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -16,6 +18,10 @@ import net.minecraftforge.fml.common.Optional;
 public class CompatUtil {
 	public static boolean isTeslaLoaded() {
 		return Loader.isModLoaded("tesla");
+	}
+
+	public static IBlockState getMoltenRTGFluidBlock() {
+		return Blocks.LAVA.getDefaultState();
 	}
 
 	/**
@@ -47,15 +53,20 @@ public class CompatUtil {
 
 	@Optional.Method(modid="tesla")
 	private static void pushEnergyFrom(World world, BlockPos pos, EnergyContainer energy, EnumFacing[] directions) {
+		if (energy.getStored() == 0) {
+			return;
+		}
 		Map<ITeslaConsumer, Long> facing = new HashMap<ITeslaConsumer, Long>(directions.length);
 		long totalPower = 0;
 		for (EnumFacing dir : directions) {
 			TileEntity te = world.getTileEntity(pos.add(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ()));
-			if (te != null && te.hasCapability(CapabilityUtil.CAPABILITY_CONSUMER, dir.getOpposite())) {
+			if (te != null && !te.isInvalid() && te.hasCapability(CapabilityUtil.CAPABILITY_CONSUMER, dir.getOpposite())) {
 				ITeslaConsumer cons = te.getCapability(CapabilityUtil.CAPABILITY_CONSUMER, dir.getOpposite());
 				long power = cons.givePower(energy.getStored(), true);
-				totalPower += power;
-				facing.put(cons, power);
+				if (power > 0) {
+					totalPower += power;
+					facing.put(cons, power);
+				}
 			}
 		}
 		for (Entry<ITeslaConsumer, Long> e : facing.entrySet()) {

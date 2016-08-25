@@ -6,6 +6,7 @@ import org.lwjgl.opengl.GL11;
 import io.github.rreeggkk.nuclearsciences.NuclearSciences;
 import io.github.rreeggkk.nuclearsciences.common.Constants;
 import io.github.rreeggkk.nuclearsciences.common.inventory.ContainerRTG;
+import io.github.rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
 import io.github.rreeggkk.nuclearsciences.common.util.TemperatureUtil;
 import io.github.rreeggkk.nuclearsciences.common.util.TextUtil;
 import net.minecraft.client.gui.inventory.GuiContainer;
@@ -57,6 +58,9 @@ public class GuiRTG extends GuiContainer {
 		fontRendererObj.drawString(temp,
 				37, 44,
 				4210752);
+		if (container.tile.getInternalTemperature().compareTo(TileEntityRTG.maxTemperature) > 0) {
+			mc.displayGuiScreen(null);
+		}
 		
 		String eff = "Efficiency: " + container.tile.getEfficiency().multiply(new Apfloat(100)).precision(4).toString(true) + "%";
 		fontRendererObj.drawString(eff,

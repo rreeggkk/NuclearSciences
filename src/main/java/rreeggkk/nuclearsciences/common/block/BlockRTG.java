@@ -74,4 +74,15 @@ public class BlockRTG extends BlockContainer {
 	public EnumBlockRenderType getRenderType(IBlockState state) {
 		return EnumBlockRenderType.MODEL;
 	}
+	
+
+    public boolean hasComparatorInputOverride(IBlockState state)
+    {
+        return true;
+    }
+
+    public int getComparatorInputOverride(IBlockState state, World world, BlockPos pos)
+    {
+        return ((TileEntityRTG)world.getTileEntity(pos)).getStackInSlot(0) == null ? 0 : 15;
+    }
 }

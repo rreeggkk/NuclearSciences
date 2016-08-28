@@ -100,6 +100,9 @@ public class ContainerRTG extends Container {
 					&& slotNum < 38) {
 				if (!inventorySlots.get(1).getHasStack()) {
 					((Slot)inventorySlots.get(1)).putStack(inventorySlots.get(slotNum).getStack().splitStack(1));
+					if (inventorySlots.get(slotNum).getStack().stackSize == 0) {
+						inventorySlots.set(slotNum, null);
+					}
 					return null;
 				}
 			} else if (slotNum >= 2 && slotNum < 11) {

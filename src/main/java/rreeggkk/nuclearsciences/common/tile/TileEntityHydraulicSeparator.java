@@ -29,7 +29,8 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	private int currentEnergy;
 	private int currentWater;
 	private ItemStack output;
-	private IHydraulicRecipe processingRecipe;
+	private int energyNeeded;
+	private int waterNeeded;
 
 	public TileEntityHydraulicSeparator() {
 		tank = new SingleFluidTank(FluidRegistry.WATER, 8000);
@@ -40,15 +41,17 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	public void update() {
 
 		if (!worldObj.isRemote) {
-			if (processingRecipe == null) {
+			if (output == null) {
 				if (inventory[0] != null) {
 					IHydraulicRecipe recipe = HydraulicSeparatorCraftingHandler.instance.getRecipeForInput(inventory[0]);
 					if (recipe != null && recipe.getInputAmount(inventory[0]) <= inventory[0].stackSize) {
-						processingRecipe = recipe;
+						//processingRecipe = recipe;
 						currentEnergy = 0;
 						currentWater = 0;
-						output = processingRecipe.getResult(inventory[0]);
-						inventory[0].splitStack(processingRecipe.getInputAmount(inventory[0]));
+						energyNeeded = recipe.getRequiredEnergy();
+						waterNeeded = recipe.getRequiredWater();
+						output = recipe.getResult(inventory[0]);
+						inventory[0].splitStack(recipe.getInputAmount(inventory[0]));
 						if (inventory[0].stackSize == 0) {
 							inventory[0] = null;
 						}
@@ -58,20 +61,20 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
 				}
 			}
-			if (processingRecipe != null) {
-				if (!(currentEnergy >= processingRecipe.getRequiredEnergy() && currentWater >= processingRecipe.getRequiredWater())) {
+			if (output != null) {
+				if (!(currentEnergy >= energyNeeded && currentWater >= waterNeeded)) {
 					int desiredEn = (int) Math.round(getMaxRunFraction() * getMaxEnergyPerTick());
 					if (desiredEn > energy.getStored()) {
-						desiredEn = (int) energy.getStored();
+						desiredEn = energy.getStored();
 					}
-					if (currentEnergy + desiredEn > processingRecipe.getRequiredEnergy()) {
-						desiredEn = (int) (processingRecipe.getRequiredEnergy() - currentEnergy);
+					if (currentEnergy + desiredEn > energyNeeded) {
+						desiredEn = energyNeeded - currentEnergy;
 					}
-					int desiredWater = (int) Math.round(processingRecipe.getRequiredWater() * (double)(currentEnergy + desiredEn)/processingRecipe.getRequiredEnergy() - currentWater);
+					int desiredWater = (int) Math.round(waterNeeded * (double)(currentEnergy + desiredEn)/energyNeeded - currentWater);
 
 					if (desiredWater>tank.getFluidAmount()) {
 						desiredWater = tank.getFluidAmount();
-						desiredEn = (int) Math.round(processingRecipe.getRequiredEnergy() * (double)(currentWater + desiredWater)/processingRecipe.getRequiredWater() - currentEnergy);
+						desiredEn = (int) Math.round(energyNeeded * (double)(currentWater + desiredWater)/waterNeeded - currentEnergy);
 					}
 
 					currentEnergy += energy.takePower(desiredEn, false);
@@ -80,13 +83,13 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 					}
 				}
 
-				if (currentEnergy >= processingRecipe.getRequiredEnergy() && currentWater >= processingRecipe.getRequiredWater()) {
+				if (currentEnergy >= energyNeeded && currentWater >= waterNeeded) {
 					if (inventory[1] == null || inventory[1].stackSize == 0) {
 						inventory[1] = output.copy();
-						processingRecipe = null;
+						output = null;
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
 						inventory[1].stackSize += output.stackSize;
-						processingRecipe = null;
+						output = null;
 					} else {
 						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
 					}
@@ -96,10 +99,10 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	}
 
 	public int getFixedCompletion(int point) {
-		if (processingRecipe == null) {
+		if (output == null) {
 			return 0;
 		}
-		return (int) ((double)currentEnergy/processingRecipe.getRequiredEnergy() * Math.pow(10, point));
+		return (int) ((double)currentEnergy/energyNeeded * Math.pow(10, point));
 	}
 
 	public SingleFluidTank getTank() {
@@ -132,6 +135,15 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
 		tank.readFromNBT(compound.getCompoundTag("Fluid"));
+		
+		if (compound.hasKey("Processing")) {
+			output = ItemStack.loadItemStackFromNBT(compound.getCompoundTag("POutput"));
+			
+			currentEnergy = compound.getInteger("PEnergy");
+			currentWater = compound.getInteger("PWater");
+			energyNeeded = compound.getInteger("NEnergy");
+			waterNeeded = compound.getInteger("NWater");
+		}
 	}
 
 	@Override
@@ -152,6 +164,20 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 		compound.setTag("Items", nbttaglist);
 		compound.setTag("Energy", energy.serializeNBT());
 		compound.setTag("Fluid", tank.writeToNBT(new NBTTagCompound()));
+		
+		if (output != null) {
+			compound.setBoolean("Processing", true);
+			
+			NBTTagCompound nbttagcompound = new NBTTagCompound();
+			output.writeToNBT(nbttagcompound);
+			compound.setTag("POutput", output.serializeNBT());
+			
+			compound.setInteger("PEnergy", currentEnergy);
+			compound.setInteger("PWater", currentWater);
+			compound.setInteger("NEnergy", energyNeeded);
+			compound.setInteger("NWater", waterNeeded);
+		}
+		
 		return compound;
 	}
 	@Override

@@ -1,120 +1,137 @@
 package rreeggkk.nuclearsciences.common.tile;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+
+import org.apfloat.Apfloat;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
-import net.minecraftforge.fluids.FluidRegistry;
+import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.common.block.BlockHydraulicSeparator;
-import rreeggkk.nuclearsciences.common.crafting.hydraulic.HydraulicSeparatorCraftingHandler;
-import rreeggkk.nuclearsciences.common.crafting.hydraulic.IHydraulicRecipe;
-import rreeggkk.nuclearsciences.common.energy.LongEnergyContainer;
-import rreeggkk.nuclearsciences.common.fluid.SingleFluidTank;
+import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
+import rreeggkk.nuclearsciences.common.item.ModItems;
+import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
+import rreeggkk.nuclearsciences.common.nuclear.element.IElement;
+import rreeggkk.nuclearsciences.common.nuclear.registry.IsotopeRegistry;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.ItemStackUtil;
+import rreeggkk.nuclearsciences.common.util.RandomUtil;
 
 public class TileEntityChemicalSeparator extends TileEntity implements ISidedInventory, ITickable {
 
-	private LongEnergyContainer energy;
+	private IntEnergyContainer energy;
 
 	private ItemStack[] inventory = new ItemStack[2];
 
-	private long currentEnergy;
-	private long currentWater;
+	private int currentEnergy;
 	private ItemStack output;
-	private IHydraulicRecipe processingRecipe;
+	private int energyNeeded;
 
 	public TileEntityChemicalSeparator() {
-		tank = new SingleFluidTank(FluidRegistry.WATER, 8000);
-		energy = new LongEnergyContainer(5000, 5000, 80, false);
+		energy = new IntEnergyContainer(5000, 5000, 80, false);
 	}
 
 	@Override
 	public void update() {
-
-		boolean updated = false;
-
 		if (!worldObj.isRemote) {
-			if (processingRecipe == null) {
-				if (inventory[0] != null) {
-					IHydraulicRecipe recipe = HydraulicSeparatorCraftingHandler.instance.getRecipeForInput(inventory[0]);
-					if (recipe != null && recipe.getInputAmount(inventory[0]) <= inventory[0].stackSize) {
-						processingRecipe = recipe;
-						currentEnergy = 0;
-						currentWater = 0;
-						output = processingRecipe.getResult(inventory[0]);
-						inventory[0].splitStack(processingRecipe.getInputAmount(inventory[0]));
-						if (inventory[0].stackSize == 0) {
-							inventory[0] = null;
-						}
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
-						updated = true;
+			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial) {
+				int numElements = getNumElements(inventory[0]);
+				if (numElements<=1) {
+					energyNeeded = 0;
+					currentEnergy = 0;
+					output = inventory[0].splitStack(1);
+					if (inventory[0].stackSize == 0) {
+						inventory[0] = null;
 					}
-				} else {
-					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
-					updated = true;
+				} else if (numElements > 1) {
+					energyNeeded = NuclearSciences.instance.config.chemicalSeparatorEnergyPerOperation;
+					currentEnergy = 0;
+					ItemStack[] outputs = getOutput(inventory[0]);
+					
+					output = outputs[1];
+					inventory[0] = outputs[0];
 				}
-			}
-			if (processingRecipe != null) {
-				if (!(currentEnergy >= processingRecipe.getRequiredEnergy() && currentWater >= processingRecipe.getRequiredWater())) {
+			} 
+			if (output != null) {
+				if (currentEnergy < energyNeeded) {
 					int desiredEn = (int) Math.round(getMaxRunFraction() * getMaxEnergyPerTick());
 					if (desiredEn > energy.getStored()) {
-						desiredEn = (int) energy.getStored();
+						desiredEn = energy.getStored();
 					}
-					if (currentEnergy + desiredEn > processingRecipe.getRequiredEnergy()) {
-						desiredEn = (int) (processingRecipe.getRequiredEnergy() - currentEnergy);
-					}
-					int desiredWater = (int) Math.round(processingRecipe.getRequiredWater() * (double)(currentEnergy + desiredEn)/processingRecipe.getRequiredEnergy() - currentWater);
-
-					if (desiredWater>tank.getFluidAmount()) {
-						desiredWater = tank.getFluidAmount();
-						desiredEn = (int) Math.round(processingRecipe.getRequiredEnergy() * (double)(currentWater + desiredWater)/processingRecipe.getRequiredWater() - currentEnergy);
+					if (currentEnergy + desiredEn > energyNeeded) {
+						desiredEn = energyNeeded - currentEnergy;
 					}
 
 					currentEnergy += energy.takePower(desiredEn, false);
-					if (desiredWater > 0) {
-						currentWater += tank.drain(desiredWater, true).amount;
-					}
 				}
 
-				if (currentEnergy >= processingRecipe.getRequiredEnergy() && currentWater >= processingRecipe.getRequiredWater()) {
+				if (currentEnergy >= energyNeeded) {
 					if (inventory[1] == null || inventory[1].stackSize == 0) {
 						inventory[1] = output.copy();
-						processingRecipe = null;
+						output = null;
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
 						inventory[1].stackSize += output.stackSize;
-						processingRecipe = null;
+						output = null;
 					} else {
 						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
-						updated = true;
 					}
 				}
 			}
 		}
-
-		if (!updated) {
-			worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
-		}
-		markDirty();
 	}
 
 	public int getFixedCompletion(int point) {
-		if (processingRecipe == null) {
+		if (output == null) {
 			return 0;
 		}
-		return (int) ((double)currentEnergy/processingRecipe.getRequiredEnergy() * Math.pow(10, point));
+		return (int) ((double)currentEnergy/energyNeeded * Math.pow(10, point));
 	}
 
-	public SingleFluidTank getTank() {
-		return tank;
+	private boolean isValidInput(ItemStack stack) {
+		return stack.getItem() == ModItems.nuclearMaterial && getNumElements(stack)>1;
+	}
+	
+	private int getNumElements(ItemStack stack) {
+		return (int) ModItems.nuclearMaterial.getContentsMass(stack).keySet().stream().map((i)->i.getElement()).distinct().count();
+	}
+
+	private ItemStack[] getOutput(ItemStack stack) {
+		HashMap<String, Apfloat> contents = ModItems.nuclearMaterial.getContents(stack);
+		
+		IElement<?> element = RandomUtil.randomItem(ModItems.nuclearMaterial.getContentsMass(stack).keySet().stream().map((i)->i.getElement()).distinct().collect(Collectors.toList()));
+		
+		HashMap<String, Apfloat> newContents = new HashMap<>();
+
+		Iterator<Entry<String, Apfloat>> iter = contents.entrySet().iterator();
+		while (iter.hasNext()) {
+			Entry<String, Apfloat> e = iter.next();
+			AIsotope<?,?> iso = IsotopeRegistry.get(e.getKey());
+			if (iso != null && iso.getElement() == element) {
+				iter.remove();
+				newContents.put(e.getKey(), e.getValue());
+			}
+		}
+
+		ItemStack[] outputs = new ItemStack[2];
+
+		//New Input
+		outputs[0] = ModItems.nuclearMaterial.setContents(new ItemStack(ModItems.nuclearMaterial), contents);
+
+		//New Output
+		outputs[1] = ModItems.nuclearMaterial.setContents(new ItemStack(ModItems.nuclearMaterial), newContents);
+
+		return outputs;
 	}
 
 	private double getMaxRunFraction() {
@@ -142,7 +159,6 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 		}
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
-		tank.readFromNBT(compound.getCompoundTag("Fluid"));
 	}
 
 	@Override
@@ -162,7 +178,6 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 		}
 		compound.setTag("Items", nbttaglist);
 		compound.setTag("Energy", energy.serializeNBT());
-		compound.setTag("Fluid", tank.writeToNBT(new NBTTagCompound()));
 		return compound;
 	}
 	@Override
@@ -194,7 +209,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	@Override
 	public int getInventoryStackLimit() {
-		return 64;
+		return 1;
 	}
 
 	@Override
@@ -210,7 +225,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
-		return index == 0 && HydraulicSeparatorCraftingHandler.instance.getRecipeForInput(stack) != null;
+		return index == 0 && isValidInput(stack);
 	}
 
 	@Override
@@ -233,7 +248,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	@Override
 	public String getName() {
-		return "container.nuclearsciences.hydraulicseparator.name";
+		return "container.nuclearsciences.chemicalseparator.name";
 	}
 
 	@Override
@@ -258,7 +273,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	@Override
 	public boolean hasCapability(Capability<?> c, EnumFacing facing) {
-		if (c == CapabilityUtil.CAPABILITY_CONSUMER || c == CapabilityUtil.FLUID_HANDLER) {
+		if (c == CapabilityUtil.CAPABILITY_CONSUMER) {
 			return true;
 		}
 		return super.hasCapability(c, facing);
@@ -270,26 +285,10 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 		if (c == CapabilityUtil.CAPABILITY_CONSUMER) {
 			return (T) energy;
 		}
-		if (c == CapabilityUtil.FLUID_HANDLER) {
-			return (T) tank;
-		}
 		return super.getCapability(c, facing);
 	}
 
-	@Override
-	public SPacketUpdateTileEntity getUpdatePacket() {
-		NBTTagCompound comp = new NBTTagCompound();
-		comp.setLong("Power", energy.getStored());
-		return new SPacketUpdateTileEntity(getPos(), 0, comp);
-	}
-
-	@Override
-	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-		NBTTagCompound comp = pkt.getNbtCompound();
-		energy.setStored(comp.getLong("Power"));
-	}
-
-	public LongEnergyContainer getEnergy() {
+	public IntEnergyContainer getEnergy() {
 		return energy;
 	}
 }

@@ -10,6 +10,7 @@ public class Config {
 	public static final Apfloat MIN_CUTOFF = new Apfloat(1e-30);
 	private static final String CATEGORY_GENERAL = "general";
 	private static final String CATEGORY_CRAFTING = "crafting";
+	private static final String CATEGORY_BALANCING = "balancing";
 
 	private Configuration config;
 
@@ -18,6 +19,8 @@ public class Config {
 	public Apfloat rtgPowerMultipler;
 	
 	public boolean vanillaRecipe;
+	
+	public int chemicalSeparatorEnergyPerOperation;
 
 	public Config(Configuration configuration) {
 		config = configuration;
@@ -33,6 +36,9 @@ public class Config {
 		}
 		config.addCustomCategoryComment(CATEGORY_CRAFTING, "Crafting Configuration"); {
 			vanillaRecipe = config.getBoolean("VanillaRecipe", CATEGORY_CRAFTING, true, "A recipe that contains only vanilla parts");
+		}
+		config.addCustomCategoryComment(CATEGORY_BALANCING, "Balancing Configuration"); {
+			chemicalSeparatorEnergyPerOperation = config.getInt("ChemicalSeparatorEnergyPerOperation", CATEGORY_BALANCING, 5000, 0, Integer.MAX_VALUE, "The amount of energy that the chemical separator will use per operation.");
 		}
 
 		trySave();

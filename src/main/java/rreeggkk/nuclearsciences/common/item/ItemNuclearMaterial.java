@@ -87,8 +87,8 @@ public class ItemNuclearMaterial extends ItemNSBase {
 		return metalMap;
 	}
 
-	public void setContents(ItemStack stack, HashMap<String, Apfloat> data) {
-		if (stack.getItem() != this) return;
+	public ItemStack setContents(ItemStack stack, HashMap<String, Apfloat> data) {
+		if (stack.getItem() != this) return null;
 
 		NBTTagCompound compound = stack.getTagCompound();
 		if (compound == null) {
@@ -106,6 +106,8 @@ public class ItemNuclearMaterial extends ItemNSBase {
 			metals.appendTag(metal);
 		}
 		compound.setTag("Metals", metals);
+		
+		return stack;
 	}
 
 	public HashMap<AIsotope<?,?>, Apfloat> getContentsMass(ItemStack stack) {

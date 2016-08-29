@@ -5,10 +5,12 @@ public class ModBlocks {
 	public static BlockRadioactiveStone radioactiveStone;
 	public static BlockRTG rtg;
 	public static BlockHydraulicSeparator hydraulicSeparator;
+	public static BlockChemicalSeparator chemicalSeparator;
 
 	public static void init() {
 		radioactiveStone = new BlockRadioactiveStone();
 		rtg = new BlockRTG();
 		hydraulicSeparator = new BlockHydraulicSeparator();
+		chemicalSeparator = new BlockChemicalSeparator();
 	}
 }

@@ -9,23 +9,24 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rreeggkk.nuclearsciences.common.inventory.slot.MachineSlot;
-import rreeggkk.nuclearsciences.common.item.ModItems;
-import rreeggkk.nuclearsciences.common.item.RTGUpgrade;
-import rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
+import rreeggkk.nuclearsciences.common.tile.TileEntityChemicalSeparator;
 
-public class ContainerRTG extends Container {
-	public TileEntityRTG tile;
+public class ContainerChemicalSeparator extends Container {
+	public TileEntityChemicalSeparator tile;
+	
+	private static final int COMPLETION_POINTS = 2;
 	
 	private int lastEnergy;
+	private int lastFixedPoint;
 
-	public ContainerRTG(InventoryPlayer player,
-			TileEntityRTG tilee) {
+	public ContainerChemicalSeparator(InventoryPlayer player,
+			TileEntityChemicalSeparator tilee) {
 		int playerInvOffX = 0;
 		int playerInvOffY = 12;
 
 		tile = tilee;
-		addSlotToContainer(new MachineSlot(tilee, 0, 15, 29));
-		addSlotToContainer(new MachineSlot(tilee, 1, 15, 53, 1));
+		addSlotToContainer(new MachineSlot(tilee, 0, 44, 36));
+		addSlotToContainer(new MachineSlot(tilee, 1, 116, 36));
 
 		for (int x = 0; x < 9; x++) {
 			addSlotToContainer(new Slot(player, x, 8 + 18 * x + playerInvOffX,
@@ -41,11 +42,6 @@ public class ContainerRTG extends Container {
 
 	}
 
-	@Override
-	public void addListener(IContainerListener listener) {
-		super.addListener(listener);
-	}
-
 	/**
 	 * Looks for changes made in the container, sends them to every listener.
 	 */
@@ -54,11 +50,15 @@ public class ContainerRTG extends Container {
 		super.detectAndSendChanges();
 		
 		for (IContainerListener l : listeners) {
+			if (lastFixedPoint != tile.getFixedCompletion(COMPLETION_POINTS)) {
+				l.sendProgressBarUpdate(this, 0, tile.getFixedCompletion(COMPLETION_POINTS));
+			}
 			if (lastEnergy != tile.getEnergy().getStored()) {
-				l.sendProgressBarUpdate(this, 0, tile.getEnergy().getStored());
+				l.sendProgressBarUpdate(this, 1, tile.getEnergy().getStored());
 			}
 		}
 		
+		lastFixedPoint = tile.getFixedCompletion(COMPLETION_POINTS);
 		lastEnergy = tile.getEnergy().getStored();
 	}
 
@@ -66,6 +66,8 @@ public class ContainerRTG extends Container {
 	@SideOnly(Side.CLIENT)
 	public void updateProgressBar(int id, int val) {
 		if (id == 0) {
+			lastFixedPoint = val;
+		} else if (id == 1) {
 			tile.getEnergy().setStored(val);
 		}
 	}
@@ -101,21 +103,10 @@ public class ContainerRTG extends Container {
 				}
 
 				slot.onSlotChange(itemstack1, itemstack);
-			} else if (itemstack1.getItem() == ModItems.nuclearMaterial
+			} else if (tile.isItemValidForSlot(0, itemstack1)
 					&& slotNum >= 2
 					&& slotNum < 38) {
-				
 				if (!mergeItemStack(itemstack1, 0, 1, false)) {
-					return null;
-				}
-			} else if (itemstack1.getItem() instanceof RTGUpgrade
-					&& slotNum >= 2
-					&& slotNum < 38) {
-				if (!inventorySlots.get(1).getHasStack()) {
-					((Slot)inventorySlots.get(1)).putStack(inventorySlots.get(slotNum).getStack().splitStack(1));
-					if (inventorySlots.get(slotNum).getStack().stackSize == 0) {
-						((Slot)inventorySlots.get(slotNum)).putStack(null);
-					}
 					return null;
 				}
 			} else if (slotNum >= 2 && slotNum < 11) {
@@ -145,5 +136,9 @@ public class ContainerRTG extends Container {
 
 		return itemstack;
 
+	}
+	
+	public double getCompletion() {
+		return lastFixedPoint/Math.pow(10, COMPLETION_POINTS);
 	}
 }

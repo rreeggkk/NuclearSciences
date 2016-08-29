@@ -44,11 +44,6 @@ public class ContainerHydraulicSeparator extends Container {
 
 	}
 
-	@Override
-	public void addListener(IContainerListener l) {
-		super.addListener(l);
-	}
-
 	/**
 	 * Looks for changes made in the container, sends them to every listener.
 	 */

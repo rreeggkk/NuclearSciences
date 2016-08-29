@@ -43,7 +43,7 @@ public class TextUtil {
 	
 	public static String getUnitString(Apfloat base, long finalPrecision, String unit, boolean addSpace, boolean round) {
 		int prefix = 0;
-		while (prefix < 8 && base.compareTo(new Apfloat(1000, Constants.PRECISION))>0) {
+		while (prefix < 8 && base.compareTo(new Apfloat(1000, Constants.PRECISION))>=0) {
 			prefix++;
 			base = base.divide(new Apfloat(1000, Constants.PRECISION)).precision(Constants.PRECISION);
 		}

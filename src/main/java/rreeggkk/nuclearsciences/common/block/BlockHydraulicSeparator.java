@@ -1,6 +1,5 @@
 package rreeggkk.nuclearsciences.common.block;
 
-import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -8,11 +7,8 @@ import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
@@ -20,26 +16,18 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fluids.FluidUtil;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.relauncher.Side;
 import rreeggkk.nuclearsciences.NuclearSciences;
-import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.gui.GuiHandler;
 import rreeggkk.nuclearsciences.common.tile.TileEntityHydraulicSeparator;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 
-public class BlockHydraulicSeparator extends BlockContainer {
+public class BlockHydraulicSeparator extends BlockContainerNSBase {
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
 	public static final PropertyBool RUNNING = PropertyBool.create("running");
 
 	public BlockHydraulicSeparator() {
-		super(Material.IRON);
-
-		setUnlocalizedName(Constants.MOD_ID + ".hydraulicSeparator");
-		setRegistryName("hydraulicSeparator");
-		setCreativeTab(NuclearSciences.instance.tab);
+		super(Material.IRON, "hydraulicSeparator", TileEntityHydraulicSeparator.class, "tileHydraulicSeparator");
 
 		setHardness(5.0F);
 		setResistance(10.0F);
@@ -47,14 +35,6 @@ public class BlockHydraulicSeparator extends BlockContainer {
 		setHarvestLevel("pickaxe", 1);
 
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(RUNNING, false));
-
-		GameRegistry.register(this);
-		GameRegistry.register(new ItemBlock(this), getRegistryName());
-		GameRegistry.registerTileEntity(TileEntityHydraulicSeparator.class, "tileHydraulicSeparator");
-
-		if (NuclearSciences.proxy.getSide() == Side.CLIENT) {
-			ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(this), 0, new ModelResourceLocation(getRegistryName(), "inventory"));
-		}
 	}
 
 	/**

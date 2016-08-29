@@ -20,7 +20,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.common.Constants;
-import rreeggkk.nuclearsciences.common.energy.EnergyContainer;
+import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 import rreeggkk.nuclearsciences.common.item.RTGUpgrade;
 import rreeggkk.nuclearsciences.common.nuclear.simulation.DecaySimulation;
@@ -33,14 +33,14 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 	public static final Apfloat maxTemperature = new Apfloat(1273.15);
 
 	private ItemStack[] inventory;
-	private EnergyContainer energy;
+	private IntEnergyContainer energy;
 	private Apfloat partialEnergy = new Apfloat(0, Constants.PRECISION);
 	private Apfloat lastEnergyPerTick = new Apfloat(0, Constants.PRECISION);
 	private Apfloat temperature = TemperatureUtil.AMBIENT;
 
 	public TileEntityRTG() {
 		inventory = new ItemStack[2];
-		energy = new EnergyContainer(5000, 5000, 5000, false);
+		energy = new IntEnergyContainer(5000, 5000, 5000, false);
 	}
 
 	@Override
@@ -199,7 +199,7 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 		return false;
 	}
 
-	public EnergyContainer getEnergy() {
+	public IntEnergyContainer getEnergy() {
 		return energy;
 	}
 
@@ -272,7 +272,6 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
 		NBTTagCompound comp = new NBTTagCompound();
-		comp.setLong("Power", energy.getStored());
 		comp.setString("EnPTi", lastEnergyPerTick.toString());
 		comp.setString("Temp", temperature.toString());
 		return new SPacketUpdateTileEntity(getPos(), 0, comp);
@@ -281,7 +280,6 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 	@Override
 	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
 		NBTTagCompound comp = pkt.getNbtCompound();
-		energy.setStored(comp.getLong("Power"));
 		lastEnergyPerTick = new Apfloat(comp.getString("EnPTi"), Constants.PRECISION);
 		temperature = new Apfloat(comp.getString("Temp"), Constants.PRECISION);
 	}

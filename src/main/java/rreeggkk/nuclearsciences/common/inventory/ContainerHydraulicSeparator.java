@@ -18,6 +18,7 @@ public class ContainerHydraulicSeparator extends Container {
 	private static final int COMPLETION_POINTS = 2;
 	
 	private int lastFluidAmt;
+	private int lastEnergy;
 	private int lastFixedPoint;
 
 	public ContainerHydraulicSeparator(InventoryPlayer player,
@@ -46,8 +47,6 @@ public class ContainerHydraulicSeparator extends Container {
 	@Override
 	public void addListener(IContainerListener l) {
 		super.addListener(l);
-		//l.sendProgressBarUpdate(this, 0, tile.getTank().getFluidAmount());
-		//l.sendProgressBarUpdate(this, 1, tile.getFixedCompletion(COMPLETION_POINTS));
 	}
 
 	/**
@@ -64,10 +63,14 @@ public class ContainerHydraulicSeparator extends Container {
 			if (lastFixedPoint != tile.getFixedCompletion(COMPLETION_POINTS)) {
 				l.sendProgressBarUpdate(this, 1, tile.getFixedCompletion(COMPLETION_POINTS));
 			}
+			if (lastEnergy != tile.getEnergy().getStored()) {
+				l.sendProgressBarUpdate(this, 2, tile.getEnergy().getStored());
+			}
 		}
 		
 		lastFluidAmt = tile.getTank().getFluidAmount();
 		lastFixedPoint = tile.getFixedCompletion(COMPLETION_POINTS);
+		lastEnergy = tile.getEnergy().getStored();
 	}
 
 	@Override
@@ -77,6 +80,8 @@ public class ContainerHydraulicSeparator extends Container {
 			tile.getTank().setFluid(new FluidStack(tile.getTank().getFluidType(), val));
 		} else if (id == 1) {
 			lastFixedPoint = val;
+		} else if (id == 2) {
+			tile.getEnergy().setStored(val);
 		}
 	}
 

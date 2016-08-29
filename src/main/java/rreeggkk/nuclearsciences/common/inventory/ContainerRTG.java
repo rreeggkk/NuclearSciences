@@ -15,6 +15,8 @@ import rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
 
 public class ContainerRTG extends Container {
 	public TileEntityRTG tile;
+	
+	private int lastEnergy;
 
 	public ContainerRTG(InventoryPlayer player,
 			TileEntityRTG tilee) {
@@ -50,11 +52,22 @@ public class ContainerRTG extends Container {
 	@Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
+		
+		for (IContainerListener l : listeners) {
+			if (lastEnergy != tile.getEnergy().getStored()) {
+				l.sendProgressBarUpdate(this, 0, tile.getEnergy().getStored());
+			}
+		}
+		
+		lastEnergy = tile.getEnergy().getStored();
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void updateProgressBar(int id, int val) {
+		if (id == 0) {
+			tile.getEnergy().setStored(val);
+		}
 	}
 
 	@Override

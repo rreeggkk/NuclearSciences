@@ -13,7 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Optional;
-import rreeggkk.nuclearsciences.common.energy.EnergyContainer;
+import rreeggkk.nuclearsciences.common.energy.AEnergyContainer;
 
 public class CompatUtil {
 	public static boolean isTeslaLoaded() {
@@ -31,7 +31,7 @@ public class CompatUtil {
 	 * @param pos the position of the block to push from
 	 * @param energy the energy container
 	 */
-	public static void tryPushEnergyFrom(World world, BlockPos pos, EnergyContainer energy) {
+	public static void tryPushEnergyFrom(World world, BlockPos pos, AEnergyContainer energy) {
 		if (isTeslaLoaded()) {
 			pushEnergyFrom(world, pos, energy, EnumFacing.VALUES);
 		}
@@ -45,15 +45,15 @@ public class CompatUtil {
 	 * @param energy the energy container
 	 * @param directions the directions to try to push the energy into
 	 */
-	public static void tryPushEnergyFrom(World world, BlockPos pos, EnergyContainer energy, EnumFacing[] directions) {
+	public static void tryPushEnergyFrom(World world, BlockPos pos, AEnergyContainer energy, EnumFacing[] directions) {
 		if (isTeslaLoaded()) {
 			pushEnergyFrom(world, pos, energy, directions);
 		}
 	}
 
 	@Optional.Method(modid="tesla")
-	private static void pushEnergyFrom(World world, BlockPos pos, EnergyContainer energy, EnumFacing[] directions) {
-		if (energy.getStored() == 0) {
+	private static void pushEnergyFrom(World world, BlockPos pos, AEnergyContainer energy, EnumFacing[] directions) {
+		if (energy.getStoredPower() == 0) {
 			return;
 		}
 		Map<ITeslaConsumer, Long> facing = new HashMap<ITeslaConsumer, Long>(directions.length);
@@ -65,15 +65,16 @@ public class CompatUtil {
 				if (cons == null) {
 					continue; //Why did this happen? This should not happen. The point of this is just to stop a crash for now
 				}
-				long power = cons.givePower(energy.getStored(), true);
+				long power = cons.givePower(energy.getStoredPower(), true);
 				if (power > 0) {
 					totalPower += power;
 					facing.put(cons, power);
 				}
 			}
 		}
+		long originalPower = energy.getStoredPower();
 		for (Entry<ITeslaConsumer, Long> e : facing.entrySet()) {
-			long power = energy.takePower(e.getValue()/totalPower*energy.getStored(), true);
+			long power = energy.takePower(e.getValue()/totalPower*originalPower, true);
 			energy.takePower(e.getKey().givePower(power, false), false);
 		}
 	}

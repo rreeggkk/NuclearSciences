@@ -9,6 +9,7 @@ import rreeggkk.nuclearsciences.client.gui.inventory.GuiHydraulicSeparator;
 import rreeggkk.nuclearsciences.client.gui.inventory.GuiRTG;
 import rreeggkk.nuclearsciences.common.inventory.ContainerHydraulicSeparator;
 import rreeggkk.nuclearsciences.common.inventory.ContainerRTG;
+import rreeggkk.nuclearsciences.common.tile.TileEntityChemicalSeparator;
 import rreeggkk.nuclearsciences.common.tile.TileEntityHydraulicSeparator;
 import rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
 
@@ -16,6 +17,7 @@ public class GuiHandler implements IGuiHandler {
 
 	public static final int RTG = 0;
 	public static final int HYDRAULIC_SEPARATOR = 1; 
+	public static final int CHEMICAL_SEPARATOR = 2; 
 
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
@@ -26,6 +28,8 @@ public class GuiHandler implements IGuiHandler {
 					return new ContainerRTG(player.inventory, (TileEntityRTG)tile);
 				case HYDRAULIC_SEPARATOR:
 					return new ContainerHydraulicSeparator(player.inventory, (TileEntityHydraulicSeparator)tile);
+				case CHEMICAL_SEPARATOR:
+					return new ContainerChemicalSeparator(player.inventory, (TileEntityChemicalSeparator)tile);
 				default:
 					return null;
 			}
@@ -42,6 +46,8 @@ public class GuiHandler implements IGuiHandler {
 					return new GuiRTG(new ContainerRTG(player.inventory, (TileEntityRTG)tile));
 				case HYDRAULIC_SEPARATOR:
 					return new GuiHydraulicSeparator(new ContainerHydraulicSeparator(player.inventory, (TileEntityHydraulicSeparator)tile));
+				case CHEMICAL_SEPARATOR:
+					return new GuiChemicalSeparator(new ContainerChemicalSeparator(player.inventory, (TileEntityChemicalSeparator)tile));
 				default:
 					return null;
 			}

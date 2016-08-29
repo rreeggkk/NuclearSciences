@@ -12,7 +12,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidTank;
 import rreeggkk.nuclearsciences.common.Constants;
-import rreeggkk.nuclearsciences.common.energy.EnergyContainer;
+import rreeggkk.nuclearsciences.common.energy.AEnergyContainer;
 
 public class GuiUtil {
 	private static final ResourceLocation elementsTexture = new ResourceLocation(Constants.MOD_ID + ":textures/gui/guiElements.png");
@@ -27,7 +27,7 @@ public class GuiUtil {
 		drawTexturedModalRect(x, y, 18, 0, 18, 73);
 	}
 
-	public static void guiEnergyMeter(EnergyContainer energy, int x, int y) {
+	public static void guiEnergyMeter(AEnergyContainer energy, int x, int y) {
 		mc().getTextureManager().bindTexture(elementsTexture);
 		drawTexturedModalRect(x, y, 54, 0, 18, 73);
 		drawTexturedModalRect(x+1, y+72 - (int)(71*energy.getFraction()), 72, 1, 16, (int)(71*energy.getFraction()));

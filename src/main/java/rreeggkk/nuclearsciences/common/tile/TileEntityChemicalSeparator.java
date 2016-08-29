@@ -5,6 +5,8 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -14,30 +16,31 @@ import net.minecraftforge.fluids.FluidRegistry;
 import rreeggkk.nuclearsciences.common.block.BlockHydraulicSeparator;
 import rreeggkk.nuclearsciences.common.crafting.hydraulic.HydraulicSeparatorCraftingHandler;
 import rreeggkk.nuclearsciences.common.crafting.hydraulic.IHydraulicRecipe;
-import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
+import rreeggkk.nuclearsciences.common.energy.LongEnergyContainer;
 import rreeggkk.nuclearsciences.common.fluid.SingleFluidTank;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.ItemStackUtil;
 
-public class TileEntityHydraulicSeparator extends TileEntity implements ISidedInventory, ITickable {
+public class TileEntityChemicalSeparator extends TileEntity implements ISidedInventory, ITickable {
 
-	private SingleFluidTank tank;
-	private IntEnergyContainer energy;
+	private LongEnergyContainer energy;
 
 	private ItemStack[] inventory = new ItemStack[2];
 
-	private int currentEnergy;
-	private int currentWater;
+	private long currentEnergy;
+	private long currentWater;
 	private ItemStack output;
 	private IHydraulicRecipe processingRecipe;
 
-	public TileEntityHydraulicSeparator() {
+	public TileEntityChemicalSeparator() {
 		tank = new SingleFluidTank(FluidRegistry.WATER, 8000);
-		energy = new IntEnergyContainer(5000, 5000, 80, false);
+		energy = new LongEnergyContainer(5000, 5000, 80, false);
 	}
 
 	@Override
 	public void update() {
+
+		boolean updated = false;
 
 		if (!worldObj.isRemote) {
 			if (processingRecipe == null) {
@@ -53,9 +56,11 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 							inventory[0] = null;
 						}
 						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
+						updated = true;
 					}
 				} else {
 					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+					updated = true;
 				}
 			}
 			if (processingRecipe != null) {
@@ -89,10 +94,16 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 						processingRecipe = null;
 					} else {
 						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+						updated = true;
 					}
 				}
 			}
 		}
+
+		if (!updated) {
+			worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		}
+		markDirty();
 	}
 
 	public int getFixedCompletion(int point) {
@@ -265,7 +276,20 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 		return super.getCapability(c, facing);
 	}
 
-	public IntEnergyContainer getEnergy() {
+	@Override
+	public SPacketUpdateTileEntity getUpdatePacket() {
+		NBTTagCompound comp = new NBTTagCompound();
+		comp.setLong("Power", energy.getStored());
+		return new SPacketUpdateTileEntity(getPos(), 0, comp);
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		NBTTagCompound comp = pkt.getNbtCompound();
+		energy.setStored(comp.getLong("Power"));
+	}
+
+	public LongEnergyContainer getEnergy() {
 		return energy;
 	}
 }

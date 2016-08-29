@@ -1,18 +1,8 @@
 package rreeggkk.nuclearsciences.common.energy;
 
-import net.darkhax.tesla.api.ITeslaConsumer;
-import net.darkhax.tesla.api.ITeslaHolder;
-import net.darkhax.tesla.api.ITeslaProducer;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraftforge.common.util.INBTSerializable;
-import net.minecraftforge.fml.common.Optional;
 
-@Optional.InterfaceList({
-	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaConsumer", modid="tesla"),
-	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaProducer", modid="tesla"),
-	@Optional.Interface(iface="net.darkhax.tesla.api.ITeslaHolder", modid="tesla")
-})
-public class EnergyContainer implements ITeslaConsumer, ITeslaProducer, ITeslaHolder, INBTSerializable<NBTTagCompound> {
+public class LongEnergyContainer extends AEnergyContainer {
 
 	/**
 	 * The amount of stored power.
@@ -36,15 +26,15 @@ public class EnergyContainer implements ITeslaConsumer, ITeslaProducer, ITeslaHo
 
 	private boolean saveIO;
 
-	public EnergyContainer(long capacity, long inOut, boolean saveIO) {
+	public LongEnergyContainer(long capacity, long inOut, boolean saveIO) {
 		this(capacity, inOut, inOut, saveIO);
 	}
 
-	public EnergyContainer(long capacity, long in, long out, boolean saveIO) {
+	public LongEnergyContainer(long capacity, long in, long out, boolean saveIO) {
 		this(0, capacity, in, out, saveIO);
 	}
 
-	public EnergyContainer(long power, long capacity, long in, long out, boolean saveIO) {
+	public LongEnergyContainer(long power, long capacity, long in, long out, boolean saveIO) {
 		this.stored = power;
 		this.capacity = capacity;
 		this.inputRate = in;
@@ -52,7 +42,7 @@ public class EnergyContainer implements ITeslaConsumer, ITeslaProducer, ITeslaHo
 		this.saveIO = saveIO;
 	}
 
-	public EnergyContainer(NBTTagCompound nbt) {
+	public LongEnergyContainer(NBTTagCompound nbt) {
 		this(0,0, true);
 		deserializeNBT(nbt);
 	}

@@ -10,12 +10,16 @@ import org.apfloat.Apfloat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 import rreeggkk.nuclearsciences.common.Constants;
+import rreeggkk.nuclearsciences.common.crafting.hydraulic.RadioactiveStoneHydraulicRecipe;
+import rreeggkk.nuclearsciences.common.nuclear.NuclearOreType;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
 import rreeggkk.nuclearsciences.common.nuclear.registry.IsotopeRegistry;
 import rreeggkk.nuclearsciences.common.util.MapUtil;
@@ -106,7 +110,7 @@ public class ItemNuclearMaterial extends ItemNSBase {
 			metals.appendTag(metal);
 		}
 		compound.setTag("Metals", metals);
-		
+
 		return stack;
 	}
 
@@ -213,5 +217,21 @@ public class ItemNuclearMaterial extends ItemNSBase {
 			}
 		}
 		return heatCapacity;
+	}
+
+	@Override
+	public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems) {
+		for (Entry<NuclearOreType, Double> e : RadioactiveStoneHydraulicRecipe.oreTypes.entrySet()) {
+			HashMap<String, Apfloat> contents = new HashMap<>();
+
+			double mult = e.getValue();
+			for (Entry<String, Double> o : e.getKey().getOreMap().entrySet()) {
+				contents.put(o.getKey(), contents.getOrDefault(o.getKey(), new Apfloat(0).precision(Constants.PRECISION)).add(new Apfloat(mult*o.getValue(), Constants.PRECISION)).precision(Constants.PRECISION));
+			}
+
+			ItemStack stack = new ItemStack(ModItems.nuclearMaterial);
+			ModItems.nuclearMaterial.setContents(stack, contents);
+			subItems.add(stack);
+		}
 	}
 }

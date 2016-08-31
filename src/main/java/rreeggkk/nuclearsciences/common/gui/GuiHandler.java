@@ -20,6 +20,7 @@ public class GuiHandler implements IGuiHandler {
 	public static final int RTG = 0;
 	public static final int HYDRAULIC_SEPARATOR = 1; 
 	public static final int CHEMICAL_SEPARATOR = 2; 
+	public static final int MULTIBLOCK_GAS_CENTRIFUGE = 3; 
 
 	@Override
 	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {

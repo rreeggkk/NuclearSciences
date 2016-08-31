@@ -19,61 +19,91 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import rreeggkk.nuclearsciences.NuclearSciences;
-import rreeggkk.nuclearsciences.common.block.BlockNSBase;
+import rreeggkk.nuclearsciences.common.block.BlockContainerNSBase;
+import rreeggkk.nuclearsciences.common.block.ModBlocks;
 import rreeggkk.nuclearsciences.common.gui.GuiHandler;
+import rreeggkk.nuclearsciences.common.tile.centrifuge.TileEntityCentrifuge;
+import rreeggkk.nuclearsciences.common.tile.centrifuge.TileEntityVaporizer;
 
-public class BlockCentrifuge extends BlockNSBase {
+public class BlockCentrifuge extends BlockContainerNSBase {
 	public static final PropertyDirection FACING = BlockHorizontal.FACING;
-	
-    public static final PropertyBool RIGHT = PropertyBool.create("right");
-    public static final PropertyBool LEFT = PropertyBool.create("left");
-	
-    public static final AxisAlignedBB X_AABB = new AxisAlignedBB(0.25D, 0.0D, 0.0D, 0.75D, 1.0D, 1.0D);
-    public static final AxisAlignedBB Z_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.25D, 1.0D, 1.0D, 0.75D);
 
-    public BlockCentrifuge() {
-		super(Material.IRON, "centrifuge"); //, TileEntityVaporizer.class, "tileVaporizer"
-		
+	public static final PropertyBool RIGHT = PropertyBool.create("right");
+	public static final PropertyBool LEFT = PropertyBool.create("left");
+
+	public static final AxisAlignedBB X_AABB = new AxisAlignedBB(0.25D, 0.0D, 0.0D, 0.75D, 1.0D, 1.0D);
+	public static final AxisAlignedBB Z_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.25D, 1.0D, 1.0D, 0.75D);
+
+	public BlockCentrifuge() {
+		super(Material.IRON, "centrifuge", TileEntityCentrifuge.class, "tileCentrifuge");
+
 		setHardness(5.0F);
 		setResistance(10.0F);
 		setSoundType(SoundType.METAL);
 		setHarvestLevel("pickaxe", 1);
-		
+
 		this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(RIGHT, false).withProperty(LEFT, false));
 	}
-    
-    @Override
-    public boolean isOpaqueCube(IBlockState state) {
-    	return false;
-    }
 
-    public boolean isFullCube(IBlockState state)
-    {
-        return false;
-    }
+	public void updateBlock(World world, BlockPos pos, IBlockState state) {
+		TileEntityVaporizer master = null;
 
-    public boolean isPassable(IBlockAccess worldIn, BlockPos pos)
-    {
-        return false;
-    }
+		BlockPos right = getRightOf(state, pos);
+		BlockPos left = getLeftOf(state, pos);
+		BlockPos down = pos.down();
 
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
-    {
-        return (state.getValue(FACING).getAxis() == Axis.X ? X_AABB : Z_AABB);
-    }
+		IBlockState rightBlock = world.getBlockState(right);
+		TileEntity teRight = world.getTileEntity(right);
+
+		IBlockState leftBlock = world.getBlockState(left);
+		TileEntity teLeft = world.getTileEntity(left);
+
+		if (leftBlock.getBlock() == ModBlocks.centrifuge) {
+			master = ((TileEntityCentrifuge)teLeft).getMaster();
+		}
+		if (master == null && world.getBlockState(down).getBlock() == ModBlocks.vaporizer) {
+			master = (TileEntityVaporizer)world.getTileEntity(down);
+		}
+		if (master == null && rightBlock.getBlock() == ModBlocks.centrifuge) {
+			master = ((TileEntityCentrifuge)teRight).getMaster();
+		}
+
+		if (master != null) {
+			master.recalculateNext();
+		}
+	}
+
+	@Override
+	public boolean isOpaqueCube(IBlockState state) {
+		return false;
+	}
+
+	public boolean isFullCube(IBlockState state)
+	{
+		return false;
+	}
+
+	public boolean isPassable(IBlockAccess worldIn, BlockPos pos)
+	{
+		return false;
+	}
+
+	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos)
+	{
+		return (state.getValue(FACING).getAxis() == Axis.X ? X_AABB : Z_AABB);
+	}
 
 	/**
 	 * Called by ItemBlocks just before a block is actually set in the world, to allow for adjustments to the
 	 * IBlockstate
 	 */
-	public IBlockState onBlockPlaced(World worldIn, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer)
-	{
+	public IBlockState onBlockPlaced(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
 		return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
 	}
-   
-    @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side,
-    		float hitX, float hitY, float hitZ) {
+
+	@Override
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side,
+			float hitX, float hitY, float hitZ) {
 
 		// Get the tile entity
 		TileEntity tileEntity = world.getTileEntity(pos);
@@ -88,13 +118,12 @@ public class BlockCentrifuge extends BlockNSBase {
 
 		// Stop any other right click actions
 		return true;
-    }
-/*
+	}
+
 	@Override
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
-    	return new TileEntityVaporizer();
-	}*/
-    
+		return new TileEntityCentrifuge();
+	}
 
 	@Override
 	protected BlockStateContainer createBlockState() {
@@ -111,12 +140,20 @@ public class BlockCentrifuge extends BlockNSBase {
 	public IBlockState getStateFromMeta(int meta) {
 		return blockState.getBaseState().withProperty(FACING, EnumFacing.getHorizontal(meta));
 	}
-	
+
 	@Override
 	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
-	       return state.withProperty(RIGHT, world.getBlockState(pos.offset(state.getValue(FACING).rotateYCCW())).getBlock() == this
-	    		   && world.getBlockState(pos.offset(state.getValue(FACING).rotateYCCW())).getValue(FACING) == state.getValue(FACING))
-	    		   .withProperty(LEFT, world.getBlockState(pos.offset(state.getValue(FACING).rotateY())).getBlock() == this
-	    		   && world.getBlockState(pos.offset(state.getValue(FACING).rotateY())).getValue(FACING) == state.getValue(FACING));
+		return state.withProperty(RIGHT, world.getBlockState(pos.offset(state.getValue(FACING).rotateYCCW())).getBlock() == this
+				&& world.getBlockState(pos.offset(state.getValue(FACING).rotateYCCW())).getValue(FACING) == state.getValue(FACING))
+				.withProperty(LEFT, world.getBlockState(pos.offset(state.getValue(FACING).rotateY())).getBlock() == this
+				&& world.getBlockState(pos.offset(state.getValue(FACING).rotateY())).getValue(FACING) == state.getValue(FACING));
+	}
+	
+	public BlockPos getRightOf(IBlockState state, BlockPos pos) {
+		return pos.offset(state.getValue(FACING).rotateYCCW());
+	}
+	
+	public BlockPos getLeftOf(IBlockState state, BlockPos pos) {
+		return pos.offset(state.getValue(FACING).rotateY());
 	}
 }

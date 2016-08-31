@@ -15,6 +15,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.command.GiveNuclearMaterialCommand;
 import rreeggkk.nuclearsciences.common.config.Config;
+import rreeggkk.nuclearsciences.common.event.EventHandler;
 import rreeggkk.nuclearsciences.proxy.CommonProxy;
 
 @Mod(modid = Constants.MOD_ID, name = Constants.MOD_NAME, version = Constants.MOD_VERSION)
@@ -31,6 +32,8 @@ public class NuclearSciences {
 	public CreativeTabs tab;
 	
 	public Config config;
+	
+	public EventHandler eventHandler;
 	
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {

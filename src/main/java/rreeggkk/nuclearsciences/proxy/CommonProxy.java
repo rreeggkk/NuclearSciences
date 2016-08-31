@@ -11,6 +11,7 @@ import rreeggkk.nuclearsciences.common.crafting.ModCrafting;
 import rreeggkk.nuclearsciences.common.crafting.hydraulic.HydraulicSeparatorCraftingHandler;
 import rreeggkk.nuclearsciences.common.creativetab.ModCreativeTab;
 import rreeggkk.nuclearsciences.common.element.ElementRegister;
+import rreeggkk.nuclearsciences.common.event.EventHandler;
 import rreeggkk.nuclearsciences.common.gui.GuiHandler;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 
@@ -26,6 +27,8 @@ public abstract class CommonProxy {
 		ModItems.init();
 		
 		NetworkRegistry.INSTANCE.registerGuiHandler(NuclearSciences.instance, new GuiHandler());
+		
+		NuclearSciences.instance.eventHandler = new EventHandler();
 	}
 
 	public void init(FMLInitializationEvent e) {

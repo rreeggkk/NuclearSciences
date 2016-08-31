@@ -2,17 +2,17 @@
   "forge_marker": 1,
   "defaults": {
     "textures": {
-       "main": "nuclearsciences:blocks/rtg_side",
-       "pipe": "nuclearsciences:blocks/rtg_top"
+       "main": "nuclearsciences:blocks/centrifuge",
+       "pipe": "nuclearsciences:blocks/centrifuge_pipe"
     },
     "model": "nuclearsciences:centrifugeMainSection"
   },
   "variants": {
     "facing": {
-      "north": {},
-      "south": { "y": 180 },
-      "west": { "y": 270 },
-      "east": { "y": 90 }
+      "north": { "y": 180 },
+      "south": {},
+      "west": { "y": 90 },
+      "east": { "y": 270 }
     },
     "right": {
       "true": {

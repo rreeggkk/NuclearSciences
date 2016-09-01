@@ -27,6 +27,7 @@ import rreeggkk.nuclearsciences.common.block.ModBlocks;
 import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
+import rreeggkk.nuclearsciences.common.nuclear.registry.IsotopeRegistry;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.NuclearMaterialUtil;
 
@@ -40,7 +41,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 	private TileEntityCondensor lightCondensor, heavyCondensor; 
 
 	private AIsotope<?,?> desiredIsotope;
-	private double productAssay = 0.045;
+	private double productAssay = 0.040;
 	private double tailsAssay =   0.003;
 
 	private boolean recalc;
@@ -60,7 +61,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 			if (inventory[0] != null && desiredIsotope != null) {
 				Apfloat feedMass = ModItems.nuclearMaterial.getTotalMass(inventory[0]).precision(Constants.PRECISION);
 				Apfloat feedAssay = ModItems.nuclearMaterial.getContentsMass(inventory[0]).get(desiredIsotope).divide(feedMass).precision(Constants.PRECISION);
-				
+
 				Apfloat feedProductRatio = new Apfloat(productAssay, Constants.PRECISION).subtract(new Apfloat(tailsAssay, Constants.PRECISION)).divide(feedAssay.subtract(new Apfloat(tailsAssay, Constants.PRECISION)));
 				Apfloat tailsProductRatio = new Apfloat(productAssay, Constants.PRECISION).subtract(feedAssay).divide(feedAssay.subtract(new Apfloat(tailsAssay, Constants.PRECISION)));
 
@@ -76,7 +77,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 				if (maxEn.compareTo(new Apfloat(energy.getStored())) < 0) {
 					swu = new Apfloat(energy.getStored()).divide(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION));
 				}
-				
+
 				Apfloat productMass = feedMass.divide(feedProductRatio).precision(Constants.PRECISION);
 				Apfloat tailsMass = productMass.multiply(tailsProductRatio).precision(Constants.PRECISION);
 
@@ -86,31 +87,31 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 					swu = feedSWU;
 					removeStack = true;
 				}
-				
+
 				Apfloat energy = swu.multiply(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION));
 				Apfloat feed = swu.multiply(feedProductRatio).divide(value(productAssay).add(value(tailsAssay).multiply(tailsProductRatio)).add(value(feedAssay).multiply(feedProductRatio)));
 				Apfloat product = feed.divide(feedProductRatio).precision(Constants.PRECISION);
 				Apfloat tail = product.multiply(tailsProductRatio).precision(Constants.PRECISION);
-				
+
 				this.energy.takePower(energy.floor().longValue(), false);
-				
+
 				HashMap<AIsotope<?,?>, Apfloat> feedContents = ModItems.nuclearMaterial.getContentsMass(inventory[0]);
 				HashMap<AIsotope<?,?>, Apfloat> productContents = new HashMap<>();
 				HashMap<AIsotope<?,?>, Apfloat> tailsContents = new HashMap<>();
-				
+
 				NuclearMaterialUtil.calculateOutputs(feedContents, productContents, tailsContents, desiredIsotope, productAssay, tailsAssay, product, tail);
-				
+
 				if (removeStack) {
 					inventory[0] = null;
 				} else {
 					ModItems.nuclearMaterial.setContentsMass(inventory[0], feedContents);
 				}
-				
+
 				if (inventory[1] == null) {
 					inventory[1] = new ItemStack(ModItems.nuclearMaterial);
 				}
 				ModItems.nuclearMaterial.setContentsMass(inventory[1], NuclearMaterialUtil.sumMassMaps(productContents, ModItems.nuclearMaterial.getContentsMass(inventory[1])));
-				
+
 				if (inventory[2] == null) {
 					inventory[2] = new ItemStack(ModItems.nuclearMaterial);
 				}
@@ -175,7 +176,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 	public void recalculateNext() {
 		recalc = true;
 	}
-	
+
 	@Override
 	public void invalidate() {
 		super.invalidate();
@@ -206,6 +207,11 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		}
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
+		if (compound.hasKey("Isotope")) {
+			desiredIsotope = IsotopeRegistry.get(compound.getString("Isotope"));
+		}
+		productAssay = compound.getDouble("ProductAssay");
+		tailsAssay = compound.getDouble("TailsAssay");
 	}
 
 	@Override
@@ -225,6 +231,11 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		}
 		compound.setTag("Items", nbttaglist);
 		compound.setTag("Energy", energy.serializeNBT());
+		if (desiredIsotope != null) {
+			compound.setString("Isotope", desiredIsotope.getFullName());
+		}
+		compound.setDouble("ProductAssay", productAssay);
+		compound.setDouble("TailsAssay", tailsAssay);
 		return compound;
 	}
 	@Override
@@ -272,7 +283,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
-		return index == 0 && stack.getItem() == ModItems.nuclearMaterial;
+		return index == 0 && stack.getItem() == ModItems.nuclearMaterial && ModItems.nuclearMaterial.getContentsMass(stack).containsKey(desiredIsotope);
 	}
 
 	@Override

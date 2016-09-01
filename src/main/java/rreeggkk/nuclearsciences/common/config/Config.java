@@ -21,6 +21,8 @@ public class Config {
 	public boolean vanillaRecipe;
 	
 	public int chemicalSeparatorEnergyPerOperation;
+	public double SWUPerCentrifugeTick;
+	public double energyPerSWU;
 
 	public Config(Configuration configuration) {
 		config = configuration;
@@ -39,6 +41,8 @@ public class Config {
 		}
 		config.addCustomCategoryComment(CATEGORY_BALANCING, "Balancing Configuration"); {
 			chemicalSeparatorEnergyPerOperation = config.getInt("ChemicalSeparatorEnergyPerOperation", CATEGORY_BALANCING, 5000, 0, Integer.MAX_VALUE, "The amount of energy that the chemical separator will use per operation.");
+			SWUPerCentrifugeTick = config.get(CATEGORY_BALANCING, "SWUPerCentrifugeTick", 0.001, "The amount of Separative Work Units produced by a centrifuge each tick.").getDouble();
+			energyPerSWU = config.get(CATEGORY_BALANCING, "energyPerSWU", 10000, "The amount of energy per Separative Work Unit").getDouble();
 		}
 
 		trySave();

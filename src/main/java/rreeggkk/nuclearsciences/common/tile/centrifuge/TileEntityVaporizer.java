@@ -2,6 +2,7 @@ package rreeggkk.nuclearsciences.common.tile.centrifuge;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -15,6 +16,8 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -31,7 +34,7 @@ import rreeggkk.nuclearsciences.common.nuclear.registry.IsotopeRegistry;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.NuclearMaterialUtil;
 
-public class TileEntityVaporizer extends TileEntity implements ITickable, ISidedInventory {
+public class TileEntityVaporizer extends TileEntity implements ITickable, ISidedInventory, IGasCentrifugeTile {
 
 	private IntEnergyContainer energy;
 
@@ -41,13 +44,13 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 	private TileEntityCondensor lightCondensor, heavyCondensor; 
 
 	private AIsotope<?,?> desiredIsotope;
-	private double productAssay = 0.040;
-	private double tailsAssay =   0.003;
+	private int productAssay = 400; // = 4.00% or 0.0400;
+	private int tailsAssay =    30; // = 0.30% or 0.0030;
 
 	private boolean recalc;
 
 	public TileEntityVaporizer() {
-		energy = new IntEnergyContainer(10000, 10000, false);
+		energy = new IntEnergyContainer(0, 0, false);
 	}
 
 	@Override
@@ -55,33 +58,35 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		if (!worldObj.isRemote) {
 			if (recalc) {
 				recalculateMultiblock();
-				recalc = false;
-			}
 
-			if (inventory[0] != null && desiredIsotope != null) {
-				Apfloat feedMass = ModItems.nuclearMaterial.getTotalMass(inventory[0]).precision(Constants.PRECISION);
-				Apfloat feedAssay = ModItems.nuclearMaterial.getContentsMass(inventory[0]).get(desiredIsotope).divide(feedMass).precision(Constants.PRECISION);
-
-				Apfloat feedProductRatio = new Apfloat(productAssay, Constants.PRECISION).subtract(new Apfloat(tailsAssay, Constants.PRECISION)).divide(feedAssay.subtract(new Apfloat(tailsAssay, Constants.PRECISION)));
-				Apfloat tailsProductRatio = new Apfloat(productAssay, Constants.PRECISION).subtract(feedAssay).divide(feedAssay.subtract(new Apfloat(tailsAssay, Constants.PRECISION)));
-
-				Apfloat maxSWU = new Apfloat(centrifuges.size()).multiply(new Apfloat(NuclearSciences.instance.config.SWUPerCentrifugeTick, Constants.PRECISION));
-				Apfloat maxEn = maxSWU.multiply(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION));
-
-				int enSize = maxEn.multiply(new Apfloat(2)).ceil().intValue();
+				int enSize = new Apfloat(centrifuges.size()).multiply(new Apfloat(NuclearSciences.instance.config.SWUPerCentrifugeTick, Constants.PRECISION))
+						.multiply(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION)).multiply(new Apfloat(2)).ceil().intValue();
 				energy.setCapacity(enSize);
 				energy.setInputRate(enSize);
 				energy.setOutputRate(enSize);
 
+				recalc = false;
+			}
+
+			if (inventory[0] != null && desiredIsotope != null && productAssay > 0 && tailsAssay > 0 && ModItems.nuclearMaterial.getContentsMass(inventory[0]).containsKey(desiredIsotope)) {
+				Apfloat feedMass = ModItems.nuclearMaterial.getTotalMass(inventory[0]).precision(Constants.PRECISION);
+				Apfloat feedAssay = ModItems.nuclearMaterial.getContentsMass(inventory[0]).get(desiredIsotope).divide(feedMass).precision(Constants.PRECISION);
+
+				Apfloat feedProductRatio = new Apfloat(productAssay/10000d, Constants.PRECISION).subtract(new Apfloat(tailsAssay/10000d, Constants.PRECISION)).divide(feedAssay.subtract(new Apfloat(tailsAssay/10000d, Constants.PRECISION)));
+				Apfloat tailsProductRatio = new Apfloat(productAssay/10000d, Constants.PRECISION).subtract(feedAssay).divide(feedAssay.subtract(new Apfloat(tailsAssay/10000d, Constants.PRECISION)));
+
+				Apfloat maxSWU = new Apfloat(centrifuges.size()).multiply(new Apfloat(NuclearSciences.instance.config.SWUPerCentrifugeTick, Constants.PRECISION));
+				Apfloat maxEn = maxSWU.multiply(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION));
+
 				Apfloat swu = maxSWU;
-				if (maxEn.compareTo(new Apfloat(energy.getStored())) < 0) {
+				if (maxEn.compareTo(new Apfloat(energy.getStored())) > 0) {
 					swu = new Apfloat(energy.getStored()).divide(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION));
 				}
 
 				Apfloat productMass = feedMass.divide(feedProductRatio).precision(Constants.PRECISION);
 				Apfloat tailsMass = productMass.multiply(tailsProductRatio).precision(Constants.PRECISION);
 
-				Apfloat feedSWU = productMass.multiply(value(productAssay)).add(tailsMass.multiply(value(tailsAssay))).subtract(feedMass.multiply(value(feedAssay)));
+				Apfloat feedSWU = productMass.multiply(value(productAssay/10000d)).add(tailsMass.multiply(value(tailsAssay/10000d))).subtract(feedMass.multiply(value(feedAssay)));
 				boolean removeStack = false;
 				if (feedSWU.compareTo(swu) < 0) {
 					swu = feedSWU;
@@ -89,7 +94,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 				}
 
 				Apfloat energy = swu.multiply(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION));
-				Apfloat feed = swu.multiply(feedProductRatio).divide(value(productAssay).add(value(tailsAssay).multiply(tailsProductRatio)).add(value(feedAssay).multiply(feedProductRatio)));
+				Apfloat feed = swu.multiply(feedProductRatio).divide(value(productAssay/10000d).add(value(tailsAssay/10000d).multiply(tailsProductRatio)).add(value(feedAssay).multiply(feedProductRatio)));
 				Apfloat product = feed.divide(feedProductRatio).precision(Constants.PRECISION);
 				Apfloat tail = product.multiply(tailsProductRatio).precision(Constants.PRECISION);
 
@@ -99,7 +104,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 				HashMap<AIsotope<?,?>, Apfloat> productContents = new HashMap<>();
 				HashMap<AIsotope<?,?>, Apfloat> tailsContents = new HashMap<>();
 
-				NuclearMaterialUtil.calculateOutputs(feedContents, productContents, tailsContents, desiredIsotope, productAssay, tailsAssay, product, tail);
+				NuclearMaterialUtil.calculateOutputs(feedContents, feed, productContents, tailsContents, desiredIsotope, productAssay/10000d, tailsAssay/10000d, product, tail);
 
 				if (removeStack) {
 					inventory[0] = null;
@@ -210,8 +215,8 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		if (compound.hasKey("Isotope")) {
 			desiredIsotope = IsotopeRegistry.get(compound.getString("Isotope"));
 		}
-		productAssay = compound.getDouble("ProductAssay");
-		tailsAssay = compound.getDouble("TailsAssay");
+		productAssay = compound.getInteger("ProductAssay");
+		tailsAssay = compound.getInteger("TailsAssay");
 	}
 
 	@Override
@@ -234,8 +239,8 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		if (desiredIsotope != null) {
 			compound.setString("Isotope", desiredIsotope.getFullName());
 		}
-		compound.setDouble("ProductAssay", productAssay);
-		compound.setDouble("TailsAssay", tailsAssay);
+		compound.setInteger("ProductAssay", productAssay);
+		compound.setInteger("TailsAssay", tailsAssay);
 		return compound;
 	}
 	@Override
@@ -368,5 +373,106 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 	public IntEnergyContainer getEnergy() {
 		return energy;
+	}
+
+	@Override
+	public boolean hasVaporizer() {
+		return true;
+	}
+
+	@Override
+	public TileEntityVaporizer getVaporizer() {
+		return this;
+	}
+
+	public void nextIsotope() {
+		Iterator<AIsotope<?,?>> iter = IsotopeRegistry.getRegistry().values().iterator();
+		AIsotope<?,?> iso = null;
+		while (iter.hasNext()) {
+			AIsotope<?,?> c = iter.next();
+			if (iter.hasNext() && iso == desiredIsotope) {
+				iso = c;
+				break;
+			}
+		}
+		if (iso == null) {
+			iso = IsotopeRegistry.getRegistry().values().iterator().next();
+		} else {
+			iso = iter.next();
+		}
+		desiredIsotope = iso;
+
+		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		markDirty();
+	}
+
+	public void previousIsotope() {
+		Iterator<AIsotope<?,?>> iter = IsotopeRegistry.getRegistry().values().iterator();
+		AIsotope<?,?> iso = iter.next();
+		AIsotope<?,?> prev = null;
+		while (iter.hasNext()) {
+			prev = iso;
+			iso = iter.next();
+			if (iso == desiredIsotope) {
+				break;
+			}
+		}
+		if (iso != null) {
+			iso = prev;
+		}
+		desiredIsotope = iso;
+
+		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		markDirty();
+	}
+
+	public void changeProductAssay(double delta) {
+		productAssay = Math.max(Math.min(productAssay + (int)(delta*10000), 10000), tailsAssay+1);
+	}
+
+	public void changeTailsAssay(double delta) {
+		tailsAssay = Math.max(Math.min(tailsAssay + (int)(delta*10000), productAssay-1), 1);
+	}
+
+	@Override
+	public SPacketUpdateTileEntity getUpdatePacket() {
+		NBTTagCompound comp = new NBTTagCompound();
+		if (desiredIsotope != null) {
+			comp.setString("Isotope", desiredIsotope.getFullName());
+		}
+		return new SPacketUpdateTileEntity(getPos(), 0, comp);
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		NBTTagCompound comp = pkt.getNbtCompound();
+		if (comp.hasKey("Isotope")) {
+			desiredIsotope = IsotopeRegistry.get(comp.getString("Isotope"));
+		}
+	}
+
+	public int getProductAssay() {
+		return productAssay;
+	}
+
+	public void setProductAssay(int productAssay) {
+		this.productAssay = productAssay;
+	}
+
+	public int getTailsAssay() {
+		return tailsAssay;
+	}
+
+	public void setTailsAssay(int tailsAssay) {
+		this.tailsAssay = tailsAssay;
+	}
+
+	@Override
+	public boolean isUsable(EntityPlayer player) {
+		return isUseableByPlayer(player);
+	}
+
+	public AIsotope<?, ?> getDesiredIsotope() {
+		return desiredIsotope;
 	}
 }

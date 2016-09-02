@@ -48,4 +48,10 @@ public class BlockCondensor extends BlockContainerNSBase {
 	public TileEntity createNewTileEntity(World worldIn, int meta) {
 		return new TileEntityCondensor();
 	}
+	
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        if (hasTileEntity(state)){
+            worldIn.removeTileEntity(pos);
+        }
+    }
 }

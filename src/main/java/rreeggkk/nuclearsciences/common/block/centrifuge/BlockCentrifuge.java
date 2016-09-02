@@ -156,4 +156,10 @@ public class BlockCentrifuge extends BlockContainerNSBase {
 	public BlockPos getLeftOf(IBlockState state, BlockPos pos) {
 		return pos.offset(state.getValue(FACING).rotateY());
 	}
+	
+    public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
+        if (hasTileEntity(state)){
+            worldIn.removeTileEntity(pos);
+        }
+    }
 }

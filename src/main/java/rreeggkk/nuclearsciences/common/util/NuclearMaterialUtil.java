@@ -10,20 +10,22 @@ import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
 
 public class NuclearMaterialUtil {
-	public static void calculateOutputs(Map<AIsotope<?,?>, Apfloat> feedMass, Map<AIsotope<?,?>, Apfloat> product, Map<AIsotope<?,?>, Apfloat> tails, AIsotope<?,?> iso, double productAssay, double tailsAssay, Apfloat productMass, Apfloat tailsMass) {
+	public static void calculateOutputs(Map<AIsotope<?,?>, Apfloat> feed, Apfloat feedMass, Map<AIsotope<?,?>, Apfloat> product, Map<AIsotope<?,?>, Apfloat> tails, AIsotope<?,?> iso, double productAssay, double tailsAssay, Apfloat productMass, Apfloat tailsMass) {
 		
 		Apfloat totalMass = productMass.add(tailsMass);
 		
 		Apfloat isoProd = productMass.multiply(new Apfloat(productAssay, Constants.PRECISION));
 		Apfloat isoTail = tailsMass.multiply(new Apfloat(tailsAssay, Constants.PRECISION));
 		
-		for (Entry<AIsotope<?,?>, Apfloat> e : feedMass.entrySet()) {
+		for (Entry<AIsotope<?,?>, Apfloat> e : feed.entrySet()) {
 			if (e.getKey() == iso) {
 				product.put(e.getKey(), isoProd);
 				tails.put(e.getKey(), isoTail);
+				feed.put(e.getKey(), feed.get(e.getKey()).subtract(isoTail).subtract(isoProd).precision(Constants.PRECISION));
 			} else {
-				product.put(e.getKey(), e.getValue().multiply(productMass).divide(totalMass));
+				product.put(e.getKey(), e.getValue().divide(feedMass).multiply(productMass).divide(totalMass));
 				tails.put(e.getKey(), e.getValue().multiply(tailsMass).divide(totalMass));
+				feed.put(e.getKey(), feed.get(e.getKey()).subtract(product.get(e.getKey())).subtract(tails.get(e.getKey())).precision(Constants.PRECISION));
 			}
 		}
 	}

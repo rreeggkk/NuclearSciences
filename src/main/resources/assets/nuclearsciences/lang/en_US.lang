@@ -13,6 +13,7 @@ item.nuclearsciences.stirling.name=Stirling Cycle Generator Upgrade
 container.nuclearsciences.rtg.name=RTG
 container.nuclearsciences.hydraulicseparator.name=Hydraulic Separator
 container.nuclearsciences.chemicalseparator.name=Chemical Separator
+container.nuclearsciences.gascentrifuge.name=Centrifuge
 
 #UI
 text.nuclearsciences.hydraulicSeparator.mBWater=mB of Water
@@ -25,6 +26,21 @@ text.nuclearsciences.material.shift=Hold §eSHIFT§7 to see more data
 text.nuclearsciences.material.command=Hold §eCOMMAND§7 to see more data
 text.nuclearsciences.material.control=Hold §eCONTROL§7 to see more data
 text.nuclearsciences.material.totalMass=Total Mass: %s
+text.nuclearsciences.centrifuge.noIsotope=No Isotope
+text.nuclearsciences.centrifuge.nextIsotope=Next Isotope
+text.nuclearsciences.centrifuge.prevIsotope=Previous Isotope
+text.nuclearsciences.centrifuge.product.positive.0=Increase product by 1%
+text.nuclearsciences.centrifuge.product.positive.1=Increase product by 0.1%
+text.nuclearsciences.centrifuge.product.positive.2=Increase product by 0.01%
+text.nuclearsciences.centrifuge.product.negative.0=Decrease product by 1%
+text.nuclearsciences.centrifuge.product.negative.1=Decrease product by 0.1%
+text.nuclearsciences.centrifuge.product.negative.2=Decrease product by 0.01%
+text.nuclearsciences.centrifuge.tails.positive.0=Increase tails by 1%
+text.nuclearsciences.centrifuge.tails.positive.1=Increase tails by 0.1%
+text.nuclearsciences.centrifuge.tails.positive.2=Increase tails by 0.01%
+text.nuclearsciences.centrifuge.tails.negative.0=Decrease tails by 1%
+text.nuclearsciences.centrifuge.tails.negative.1=Decrease tails by 0.1%
+text.nuclearsciences.centrifuge.tails.negative.2=Decrease tails by 0.01%
 
 #Creative Tab
 itemGroup.tab.nuclearsciences.name=Nuclear Sciences

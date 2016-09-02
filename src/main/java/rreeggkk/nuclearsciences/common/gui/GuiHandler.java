@@ -6,14 +6,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
 import rreeggkk.nuclearsciences.client.gui.inventory.GuiChemicalSeparator;
+import rreeggkk.nuclearsciences.client.gui.inventory.GuiGasCentrifuge;
 import rreeggkk.nuclearsciences.client.gui.inventory.GuiHydraulicSeparator;
 import rreeggkk.nuclearsciences.client.gui.inventory.GuiRTG;
 import rreeggkk.nuclearsciences.common.inventory.ContainerChemicalSeparator;
+import rreeggkk.nuclearsciences.common.inventory.ContainerGasCentrifuge;
 import rreeggkk.nuclearsciences.common.inventory.ContainerHydraulicSeparator;
 import rreeggkk.nuclearsciences.common.inventory.ContainerRTG;
 import rreeggkk.nuclearsciences.common.tile.TileEntityChemicalSeparator;
 import rreeggkk.nuclearsciences.common.tile.TileEntityHydraulicSeparator;
 import rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
+import rreeggkk.nuclearsciences.common.tile.centrifuge.IGasCentrifugeTile;
 
 public class GuiHandler implements IGuiHandler {
 
@@ -33,6 +36,12 @@ public class GuiHandler implements IGuiHandler {
 					return new ContainerHydraulicSeparator(player.inventory, (TileEntityHydraulicSeparator)tile);
 				case CHEMICAL_SEPARATOR:
 					return new ContainerChemicalSeparator(player.inventory, (TileEntityChemicalSeparator)tile);
+				case MULTIBLOCK_GAS_CENTRIFUGE:
+					IGasCentrifugeTile gasCent = (IGasCentrifugeTile)tile;
+					if (gasCent.hasVaporizer()) {
+						return new ContainerGasCentrifuge(player.inventory, gasCent.getVaporizer(), gasCent);
+					} 
+					return null;
 				default:
 					return null;
 			}
@@ -51,6 +60,12 @@ public class GuiHandler implements IGuiHandler {
 					return new GuiHydraulicSeparator(new ContainerHydraulicSeparator(player.inventory, (TileEntityHydraulicSeparator)tile));
 				case CHEMICAL_SEPARATOR:
 					return new GuiChemicalSeparator(new ContainerChemicalSeparator(player.inventory, (TileEntityChemicalSeparator)tile));
+				case MULTIBLOCK_GAS_CENTRIFUGE:
+					IGasCentrifugeTile gasCent = (IGasCentrifugeTile)tile;
+					if (gasCent.hasVaporizer()) {
+						return new GuiGasCentrifuge(new ContainerGasCentrifuge(player.inventory, gasCent.getVaporizer(), gasCent));
+					}
+					return null;
 				default:
 					return null;
 			}

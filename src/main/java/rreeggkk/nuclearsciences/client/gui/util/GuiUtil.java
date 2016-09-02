@@ -30,7 +30,8 @@ public class GuiUtil {
 	public static void guiEnergyMeter(AEnergyContainer energy, int x, int y) {
 		mc().getTextureManager().bindTexture(elementsTexture);
 		drawTexturedModalRect(x, y, 54, 0, 18, 73);
-		drawTexturedModalRect(x+1, y+72 - (int)(71*energy.getFraction()), 72, 1, 16, (int)(71*energy.getFraction()));
+		double frac = Math.max(Math.min(energy.getFraction(), 1), 0);
+		drawTexturedModalRect(x+1, y+72 - (int)(71*frac), 72, 1, 16, (int)(71*frac));
 	}
 
 	private static Minecraft mc(){
@@ -114,5 +115,9 @@ public class GuiUtil {
 		vertexbuffer.pos((double)(x + width), (double)(y + 0), 0).tex((double)((float)(textureX + width) * 0.00390625F), (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
 		vertexbuffer.pos((double)(x + 0), (double)(y + 0), 0).tex((double)((float)(textureX + 0) * 0.00390625F), (double)((float)(textureY + 0) * 0.00390625F)).endVertex();
 		tessellator.draw();
+	}
+	
+	public static boolean isMouseIn(int mx, int my, int x, int y, int w, int h, int guiLeft, int guiTop) {
+		return mx >= guiLeft+x && mx <= guiLeft+x+w && my >= guiTop+y && my <= guiTop+y+h;
 	}
 }

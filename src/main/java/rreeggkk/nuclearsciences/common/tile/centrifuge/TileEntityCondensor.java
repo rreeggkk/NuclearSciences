@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
-public class TileEntityCondensor extends TileEntity implements ISidedInventory {
+public class TileEntityCondensor extends TileEntity implements ISidedInventory, IGasCentrifugeTile  {
 	private TileEntityVaporizer master;
 	
 	public void setMaster(TileEntityVaporizer master) {
@@ -121,4 +121,20 @@ public class TileEntityCondensor extends TileEntity implements ISidedInventory {
 	public boolean canExtractItem(int index, ItemStack stack, EnumFacing direction) {
 		return master != null ? master.canExtractItemCondensor(index, stack, direction, this) : false;
 	}
+
+	@Override
+	public boolean hasVaporizer() {
+		return master != null ? true : false;
+	}
+
+	@Override
+	public TileEntityVaporizer getVaporizer() {
+		return master != null ? master.getVaporizer() : null;
+	}
+
+	@Override
+	public boolean isUsable(EntityPlayer player) {
+		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
+	}
+
 }

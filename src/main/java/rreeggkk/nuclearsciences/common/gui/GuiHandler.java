@@ -37,11 +37,7 @@ public class GuiHandler implements IGuiHandler {
 				case CHEMICAL_SEPARATOR:
 					return new ContainerChemicalSeparator(player.inventory, (TileEntityChemicalSeparator)tile);
 				case MULTIBLOCK_GAS_CENTRIFUGE:
-					IGasCentrifugeTile gasCent = (IGasCentrifugeTile)tile;
-					if (gasCent.hasVaporizer()) {
-						return new ContainerGasCentrifuge(player.inventory, gasCent.getVaporizer(), gasCent);
-					} 
-					return null;
+					return new ContainerGasCentrifuge(player.inventory, (IGasCentrifugeTile)tile);
 				default:
 					return null;
 			}
@@ -61,11 +57,7 @@ public class GuiHandler implements IGuiHandler {
 				case CHEMICAL_SEPARATOR:
 					return new GuiChemicalSeparator(new ContainerChemicalSeparator(player.inventory, (TileEntityChemicalSeparator)tile));
 				case MULTIBLOCK_GAS_CENTRIFUGE:
-					IGasCentrifugeTile gasCent = (IGasCentrifugeTile)tile;
-					if (gasCent.hasVaporizer()) {
-						return new GuiGasCentrifuge(new ContainerGasCentrifuge(player.inventory, gasCent.getVaporizer(), gasCent));
-					}
-					return null;
+					return new GuiGasCentrifuge(new ContainerGasCentrifuge(player.inventory, (IGasCentrifugeTile)tile));
 				default:
 					return null;
 			}

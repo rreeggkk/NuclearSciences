@@ -10,6 +10,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import rreeggkk.nuclearsciences.common.Constants;
 
 public abstract class BlockContainerNSBase extends BlockNSBase implements ITileEntityProvider {
 
@@ -20,7 +21,7 @@ public abstract class BlockContainerNSBase extends BlockNSBase implements ITileE
 	public BlockContainerNSBase(Material blockMaterialIn, MapColor blockMapColorIn, String name, Class<? extends TileEntity> tileClass, String tileRegister) {
 		super(blockMaterialIn, blockMapColorIn, name);
 		
-		GameRegistry.registerTileEntity(tileClass, tileRegister);
+		GameRegistry.registerTileEntity(tileClass, Constants.MOD_ID + ":tile" + name);
 	}
 	
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state)

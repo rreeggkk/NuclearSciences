@@ -6,6 +6,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IContainerListener;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
@@ -13,22 +14,23 @@ import rreeggkk.nuclearsciences.common.tile.centrifuge.IGasCentrifugeTile;
 import rreeggkk.nuclearsciences.common.tile.centrifuge.TileEntityVaporizer;
 
 public class ContainerGasCentrifuge extends Container {
-	public TileEntityVaporizer tile;
 	public IGasCentrifugeTile interactTile;
-	
+
 	private int lastEnergy;
 	private int lastCapacity;
 	private int lastPAssay;
 	private int lastTAssay;
 	
+	private int dX, dY;
+	
+	private TileEntityVaporizer lastTile;
+
 	private AIsotope<?,?> lastIsotope;
 
-	public ContainerGasCentrifuge(InventoryPlayer player,
-			TileEntityVaporizer tilee, IGasCentrifugeTile interactTile) {
+	public ContainerGasCentrifuge(InventoryPlayer player, IGasCentrifugeTile interactTile) {
 		int playerInvOffX = 0;
 		int playerInvOffY = 12;
 
-		tile = tilee;
 		this.interactTile = interactTile;
 
 		for (int x = 0; x < 9; x++) {
@@ -56,49 +58,73 @@ public class ContainerGasCentrifuge extends Container {
 	@Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
-		
-		for (IContainerListener l : listeners) {
-			if (lastEnergy != tile.getEnergy().getStored()) {
-				l.sendProgressBarUpdate(this, 0, tile.getEnergy().getStored());
+
+		if (getTile() != null) {
+			for (IContainerListener l : listeners) {
+				if (lastEnergy != getTile().getEnergy().getStored()) {
+					l.sendProgressBarUpdate(this, 0, getTile().getEnergy().getStored());
+				}
+				if (lastPAssay != getTile().getProductAssay()) {
+					l.sendProgressBarUpdate(this, 1, getTile().getProductAssay());
+				}
+				if (lastTAssay != getTile().getTailsAssay()) {
+					l.sendProgressBarUpdate(this, 2, getTile().getTailsAssay());
+				}
+				if (lastCapacity != getTile().getEnergy().getIntCapacity()) {
+					l.sendProgressBarUpdate(this, 3, getTile().getEnergy().getIntCapacity());
+				}
+				if (lastIsotope != getTile().getDesiredIsotope()) {
+					l.sendProgressBarUpdate(this, 4, 0);
+					getTile().getWorld().notifyBlockUpdate(getTile().getPos(), getTile().getWorld().getBlockState(getTile().getPos()), getTile().getWorld().getBlockState(getTile().getPos()), 2);
+					getTile().markDirty();
+				}
+				if (lastTile != getTile()) {
+					BlockPos deltaPos = getTile().getPos().subtract(interactTile.getPos());
+					l.sendProgressBarUpdate(this, 5, deltaPos.getX());
+					l.sendProgressBarUpdate(this, 6, deltaPos.getY());
+					l.sendProgressBarUpdate(this, 7, deltaPos.getZ());
+				}
 			}
-			if (lastPAssay != tile.getProductAssay()) {
-				l.sendProgressBarUpdate(this, 1, tile.getProductAssay());
+			
+			if (lastTile != getTile()) {
+				lastTile = getTile();
+				return;
 			}
-			if (lastTAssay != tile.getTailsAssay()) {
-				l.sendProgressBarUpdate(this, 2, tile.getTailsAssay());
-			}
-			if (lastCapacity != tile.getEnergy().getIntCapacity()) {
-				l.sendProgressBarUpdate(this, 3, tile.getEnergy().getIntCapacity());
-			}
-			if (lastIsotope !=tile.getDesiredIsotope()) {
-				l.sendProgressBarUpdate(this, 4, 0);
-				tile.getWorld().notifyBlockUpdate(tile.getPos(), tile.getWorld().getBlockState(tile.getPos()), tile.getWorld().getBlockState(tile.getPos()), 2);
-				tile.markDirty();
-			}
+
+			lastEnergy = getTile().getEnergy().getStored();
+			lastPAssay = getTile().getProductAssay();
+			lastTAssay = getTile().getTailsAssay();
+			lastCapacity = getTile().getEnergy().getIntCapacity();
+			lastIsotope = getTile().getDesiredIsotope();
 		}
-		
-		lastEnergy = tile.getEnergy().getStored();
-		lastPAssay = tile.getProductAssay();
-		lastTAssay = tile.getTailsAssay();
-		lastCapacity = tile.getEnergy().getIntCapacity();
-		lastIsotope = tile.getDesiredIsotope();
+		lastTile = getTile();
 	}
 
 	@Override
 	@SideOnly(Side.CLIENT)
 	public void updateProgressBar(int id, int val) {
-		if (id == 0) {
-			tile.getEnergy().setStored(val);
-		} else if (id == 1) {
-			tile.setProductAssay(val);
-		} else if (id == 2) {
-			tile.setTailsAssay(val);
-		} else if (id == 3) {
-			tile.getEnergy().setCapacity(val);
-		} else if (id == 4) {
-			tile.getWorld().notifyBlockUpdate(tile.getPos(), tile.getWorld().getBlockState(tile.getPos()), tile.getWorld().getBlockState(tile.getPos()), 2);
-			tile.markDirty();
+		if (id == 5) {
+			dX = val;
+		} else if (id == 6) {
+			dY = val;
+		} else if (id == 7) {
+			interactTile.setVaporizer((TileEntityVaporizer) interactTile.getWorld().getTileEntity(new BlockPos(dX, dY, val).add(interactTile.getPos())));
 		}
+		if (getTile() == null) {
+			return;
+		}
+		if (id == 0) {
+			getTile().getEnergy().setStored(val);
+		} else if (id == 1) {
+			getTile().setProductAssay(val);
+		} else if (id == 2) {
+			getTile().setTailsAssay(val);
+		} else if (id == 3) {
+			getTile().getEnergy().setCapacity(val);
+		} else if (id == 4) {
+			getTile().getWorld().notifyBlockUpdate(getTile().getPos(), getTile().getWorld().getBlockState(getTile().getPos()), getTile().getWorld().getBlockState(getTile().getPos()), 2);
+			getTile().markDirty();
+		} 
 	}
 
 	@Override
@@ -111,43 +137,43 @@ public class ContainerGasCentrifuge extends Container {
 	 */
 	@Override
 	public boolean enchantItem(EntityPlayer player, int action) {
-		if (!player.getEntityWorld().isRemote) {
+		if (!player.getEntityWorld().isRemote && getTile() != null) {
 			if (action == 0) {
-				tile.nextIsotope();
+				getTile().nextIsotope();
 			} else if (action == 1) {
-				tile.previousIsotope();
+				getTile().previousIsotope();
 			} else if (action == 2) {
-				tile.changeProductAssay(0.1);
+				getTile().changeProductAssay(0.1);
 			} else if (action == 3) {
-				tile.changeProductAssay(0.01);
+				getTile().changeProductAssay(0.01);
 			} else if (action == 4) {
-				tile.changeProductAssay(0.001);
+				getTile().changeProductAssay(0.001);
 			} else if (action == 5) {
-				tile.changeProductAssay(0.0001);
+				getTile().changeProductAssay(0.0001);
 			} else if (action == 6) {
-				tile.changeProductAssay(-0.1);
+				getTile().changeProductAssay(-0.1);
 			} else if (action == 7) {
-				tile.changeProductAssay(-0.01);
+				getTile().changeProductAssay(-0.01);
 			} else if (action == 8) {
-				tile.changeProductAssay(-0.001);
+				getTile().changeProductAssay(-0.001);
 			} else if (action == 9) {
-				tile.changeProductAssay(-0.0001);
+				getTile().changeProductAssay(-0.0001);
 			} else if (action == 10) {
-				tile.changeTailsAssay(0.1);
+				getTile().changeTailsAssay(0.1);
 			} else if (action == 11) {
-				tile.changeTailsAssay(0.01);
+				getTile().changeTailsAssay(0.01);
 			} else if (action == 12) {
-				tile.changeTailsAssay(0.001);
+				getTile().changeTailsAssay(0.001);
 			} else if (action == 13) {
-				tile.changeTailsAssay(0.0001);
+				getTile().changeTailsAssay(0.0001);
 			} else if (action == 14) {
-				tile.changeTailsAssay(-0.1);
+				getTile().changeTailsAssay(-0.1);
 			} else if (action == 15) {
-				tile.changeTailsAssay(-0.01);
+				getTile().changeTailsAssay(-0.01);
 			} else if (action == 16) {
-				tile.changeTailsAssay(-0.001);
+				getTile().changeTailsAssay(-0.001);
 			} else if (action == 17) {
-				tile.changeTailsAssay(-0.0001);
+				getTile().changeTailsAssay(-0.0001);
 			}
 		}
 		return super.enchantItem(player, action);
@@ -160,5 +186,9 @@ public class ContainerGasCentrifuge extends Container {
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotNum) {
 		return null;
+	}
+
+	public TileEntityVaporizer getTile() {
+		return interactTile.hasVaporizer() ? interactTile.getVaporizer() : null;
 	}
 }

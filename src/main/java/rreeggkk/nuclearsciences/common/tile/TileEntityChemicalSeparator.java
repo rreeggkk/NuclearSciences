@@ -62,8 +62,11 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 					
 					output = outputs[1];
 					inventory[0] = outputs[0];
+					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
 				}
-			} 
+			} else {
+				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+			}
 			if (output != null) {
 				if (currentEnergy < energyNeeded) {
 					int desiredEn = (int) Math.round(getMaxRunFraction() * getMaxEnergyPerTick());

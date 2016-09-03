@@ -59,14 +59,6 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		if (!worldObj.isRemote) {
 			if (recalc) {
 				recalculateMultiblock();
-
-				int enSize = new Apfloat(centrifuges.size()).multiply(new Apfloat(NuclearSciences.instance.config.SWUPerCentrifugeTick, Constants.PRECISION))
-						.multiply(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION)).multiply(new Apfloat(2)).ceil().intValue();
-				energy.setCapacity(enSize);
-				energy.setInputRate(enSize);
-				energy.setOutputRate(enSize);
-
-				recalc = false;
 			}
 
 			if (inventory[0] != null && desiredIsotope != null && productAssay > 0 && tailsAssay > 0 && ModItems.nuclearMaterial.getContentsMass(inventory[0]).containsKey(desiredIsotope)) {
@@ -177,6 +169,14 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 				}
 			}
 		}
+
+		int enSize = new Apfloat(centrifuges.size()).multiply(new Apfloat(NuclearSciences.instance.config.SWUPerCentrifugeTick, Constants.PRECISION))
+				.multiply(new Apfloat(NuclearSciences.instance.config.energyPerSWU, Constants.PRECISION)).multiply(new Apfloat(2)).ceil().intValue();
+		energy.setCapacity(enSize);
+		energy.setInputRate(enSize);
+		energy.setOutputRate(enSize);
+
+		recalc = false;
 	}
 
 	public void recalculateNext() {
@@ -195,9 +195,9 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 	@Override
 	public void readFromNBT(NBTTagCompound compound) {
+		recalculateNext();
+		
 		super.readFromNBT(compound);
-
-		recalc = true;
 
 		NBTTagList nbttaglist = compound.getTagList("Items", NBT.TAG_COMPOUND);
 
@@ -475,5 +475,9 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 	public AIsotope<?, ?> getDesiredIsotope() {
 		return desiredIsotope;
+	}
+
+	@Override
+	public void setVaporizer(TileEntityVaporizer vaporizer) {
 	}
 }

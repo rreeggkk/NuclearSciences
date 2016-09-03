@@ -69,10 +69,10 @@ public class GuiGasCentrifuge extends GuiContainer {
 				4210752);
 		
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 8, 44, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.positive." + (1 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.positive." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
 		}
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 114, 44, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.negative." + (1 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.negative." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
 		}
 		
 		String tailAssay = container.tile.getTailsAssay()/100d + "%";
@@ -81,10 +81,10 @@ public class GuiGasCentrifuge extends GuiContainer {
 				4210752);
 		
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 8, 62, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.positive." + (1 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.positive." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
 		}
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 114, 62, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.negative." + (1 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.negative." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
 		}
 		
 		/*
@@ -107,18 +107,18 @@ public class GuiGasCentrifuge extends GuiContainer {
 		}
 
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 8, 44, 16, 16, guiLeft, guiTop)) {
-			mc.playerController.sendEnchantPacket(container.windowId, 6 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
+			mc.playerController.sendEnchantPacket(container.windowId, 8 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
 		}
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 114, 44, 16, 16, guiLeft, guiTop)) {
-			mc.playerController.sendEnchantPacket(container.windowId, 3 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
+			mc.playerController.sendEnchantPacket(container.windowId, 4 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
 		}
 
 		
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 8, 62, 16, 16, guiLeft, guiTop)) {
-			mc.playerController.sendEnchantPacket(container.windowId, 12 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
+			mc.playerController.sendEnchantPacket(container.windowId, 16 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
 		}
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 114, 62, 16, 16, guiLeft, guiTop)) {
-			mc.playerController.sendEnchantPacket(container.windowId, 9 - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
+			mc.playerController.sendEnchantPacket(container.windowId, 12 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0));
 		}
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 	}

@@ -103,4 +103,9 @@ public class AIsotope<T extends IElement<T>, U extends AIsotope<T,U>> {
 	public boolean isStable() {
 		return decayMode == null;
 	}
+	
+	@Override
+	public String toString() {
+		return getFullName();
+	}
 }

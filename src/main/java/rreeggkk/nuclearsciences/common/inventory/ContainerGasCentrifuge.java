@@ -8,6 +8,7 @@ import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
 import rreeggkk.nuclearsciences.common.tile.centrifuge.IGasCentrifugeTile;
 import rreeggkk.nuclearsciences.common.tile.centrifuge.TileEntityVaporizer;
 
@@ -19,6 +20,8 @@ public class ContainerGasCentrifuge extends Container {
 	private int lastCapacity;
 	private int lastPAssay;
 	private int lastTAssay;
+	
+	private AIsotope<?,?> lastIsotope;
 
 	public ContainerGasCentrifuge(InventoryPlayer player,
 			TileEntityVaporizer tilee, IGasCentrifugeTile interactTile) {
@@ -67,12 +70,18 @@ public class ContainerGasCentrifuge extends Container {
 			if (lastCapacity != tile.getEnergy().getIntCapacity()) {
 				l.sendProgressBarUpdate(this, 3, tile.getEnergy().getIntCapacity());
 			}
+			if (lastIsotope !=tile.getDesiredIsotope()) {
+				l.sendProgressBarUpdate(this, 4, 0);
+				tile.getWorld().notifyBlockUpdate(tile.getPos(), tile.getWorld().getBlockState(tile.getPos()), tile.getWorld().getBlockState(tile.getPos()), 2);
+				tile.markDirty();
+			}
 		}
 		
 		lastEnergy = tile.getEnergy().getStored();
 		lastPAssay = tile.getProductAssay();
 		lastTAssay = tile.getTailsAssay();
 		lastCapacity = tile.getEnergy().getIntCapacity();
+		lastIsotope = tile.getDesiredIsotope();
 	}
 
 	@Override
@@ -86,6 +95,9 @@ public class ContainerGasCentrifuge extends Container {
 			tile.setTailsAssay(val);
 		} else if (id == 3) {
 			tile.getEnergy().setCapacity(val);
+		} else if (id == 4) {
+			tile.getWorld().notifyBlockUpdate(tile.getPos(), tile.getWorld().getBlockState(tile.getPos()), tile.getWorld().getBlockState(tile.getPos()), 2);
+			tile.markDirty();
 		}
 	}
 
@@ -105,28 +117,36 @@ public class ContainerGasCentrifuge extends Container {
 			} else if (action == 1) {
 				tile.previousIsotope();
 			} else if (action == 2) {
-				tile.changeProductAssay(0.01);
+				tile.changeProductAssay(0.1);
 			} else if (action == 3) {
-				tile.changeProductAssay(0.001);
+				tile.changeProductAssay(0.01);
 			} else if (action == 4) {
-				tile.changeProductAssay(0.0001);
+				tile.changeProductAssay(0.001);
 			} else if (action == 5) {
-				tile.changeProductAssay(-0.01);
+				tile.changeProductAssay(0.0001);
 			} else if (action == 6) {
-				tile.changeProductAssay(-0.001);
+				tile.changeProductAssay(-0.1);
 			} else if (action == 7) {
-				tile.changeProductAssay(-0.0001);
+				tile.changeProductAssay(-0.01);
 			} else if (action == 8) {
-				tile.changeTailsAssay(0.01);
+				tile.changeProductAssay(-0.001);
 			} else if (action == 9) {
-				tile.changeTailsAssay(0.001);
+				tile.changeProductAssay(-0.0001);
 			} else if (action == 10) {
-				tile.changeTailsAssay(0.0001);
+				tile.changeTailsAssay(0.1);
 			} else if (action == 11) {
-				tile.changeTailsAssay(-0.01);
+				tile.changeTailsAssay(0.01);
 			} else if (action == 12) {
-				tile.changeTailsAssay(-0.001);
+				tile.changeTailsAssay(0.001);
 			} else if (action == 13) {
+				tile.changeTailsAssay(0.0001);
+			} else if (action == 14) {
+				tile.changeTailsAssay(-0.1);
+			} else if (action == 15) {
+				tile.changeTailsAssay(-0.01);
+			} else if (action == 16) {
+				tile.changeTailsAssay(-0.001);
+			} else if (action == 17) {
 				tile.changeTailsAssay(-0.0001);
 			}
 		}

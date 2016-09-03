@@ -41,7 +41,7 @@ public class Config {
 		}
 		config.addCustomCategoryComment(CATEGORY_BALANCING, "Balancing Configuration"); {
 			chemicalSeparatorEnergyPerOperation = config.getInt("ChemicalSeparatorEnergyPerOperation", CATEGORY_BALANCING, 5000, 0, Integer.MAX_VALUE, "The amount of energy that the chemical separator will use per operation.");
-			SWUPerCentrifugeTick = config.get(CATEGORY_BALANCING, "SWUPerCentrifugeTick", 0.01, "The amount of Separative Work Units produced by a centrifuge each tick. [Default: 0.01]").getDouble();
+			SWUPerCentrifugeTick = config.get(CATEGORY_BALANCING, "SWUPerCentrifugeTick", 0.05, "The amount of Separative Work Units produced by a centrifuge each tick. [Default: 0.05]").getDouble();
 			energyPerSWU = config.get(CATEGORY_BALANCING, "energyPerSWU", 1000, "The amount of energy per Separative Work Unit. [Default: 1000]").getDouble();
 		}
 

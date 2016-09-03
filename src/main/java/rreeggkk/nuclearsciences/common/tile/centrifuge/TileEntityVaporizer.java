@@ -391,7 +391,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		AIsotope<?,?> iso = null;
 		while (iter.hasNext()) {
 			AIsotope<?,?> c = iter.next();
-			if (iter.hasNext() && iso == desiredIsotope) {
+			if (iter.hasNext() && c == desiredIsotope) {
 				iso = c;
 				break;
 			}
@@ -403,8 +403,8 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		}
 		desiredIsotope = iso;
 
-		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
-		markDirty();
+		//worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		//markDirty();
 	}
 
 	public void previousIsotope() {
@@ -423,8 +423,8 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		}
 		desiredIsotope = iso;
 
-		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
-		markDirty();
+		//worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		//markDirty();
 	}
 
 	public void changeProductAssay(double delta) {

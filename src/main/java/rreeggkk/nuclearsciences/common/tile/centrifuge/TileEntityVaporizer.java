@@ -13,6 +13,7 @@ import org.apfloat.ApfloatMath;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -104,7 +105,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 				HashMap<AIsotope<?,?>, Apfloat> productContents = new HashMap<>();
 				HashMap<AIsotope<?,?>, Apfloat> tailsContents = new HashMap<>();
 
-				NuclearMaterialUtil.calculateOutputs(feedContents, feed, productContents, tailsContents, desiredIsotope, productAssay/10000d, tailsAssay/10000d, product, tail);
+				NuclearMaterialUtil.calculateOutputs(feedContents, feed, feedMass, productContents, tailsContents, desiredIsotope, productAssay/10000d, tailsAssay/10000d, product, tail);
 
 				if (removeStack) {
 					inventory[0] = null;
@@ -255,7 +256,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 	@Override
 	public ItemStack decrStackSize(int index, int count) {
-		return inventory[index].splitStack(count);
+		return ItemStackHelper.getAndSplit(inventory, index, count);
 	}
 
 	@Override

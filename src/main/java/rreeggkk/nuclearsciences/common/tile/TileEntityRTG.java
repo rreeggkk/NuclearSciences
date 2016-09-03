@@ -8,6 +8,7 @@ import org.apfloat.Apint;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -158,7 +159,7 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 
 	@Override
 	public ItemStack decrStackSize(int index, int count) {
-		return inventory[index].splitStack(count);
+		return ItemStackHelper.getAndSplit(inventory, index, count);
 	}
 
 	@Override

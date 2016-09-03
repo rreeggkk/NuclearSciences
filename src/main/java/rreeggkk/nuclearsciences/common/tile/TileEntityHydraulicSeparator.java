@@ -2,6 +2,7 @@ package rreeggkk.nuclearsciences.common.tile;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
+import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -192,7 +193,7 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 
 	@Override
 	public ItemStack decrStackSize(int index, int count) {
-		return inventory[index].splitStack(count);
+		return ItemStackHelper.getAndSplit(inventory, index, count);
 	}
 
 	@Override

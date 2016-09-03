@@ -1,9 +1,12 @@
 package rreeggkk.nuclearsciences.client.gui.inventory;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.resources.I18n;
@@ -56,6 +59,16 @@ public class GuiGasCentrifuge extends GuiContainer {
 				69 - fontRendererObj.getStringWidth(isotope) / 2, 30,
 				4210752);
 		
+		String prodAssay = container.tile.getProductAssay()/100d + "%";
+		fontRendererObj.drawString(prodAssay,
+				69 - fontRendererObj.getStringWidth(prodAssay) / 2, 49,
+				4210752);
+		
+		String tailAssay = container.tile.getTailsAssay()/100d + "%";
+		fontRendererObj.drawString(tailAssay,
+				69 - fontRendererObj.getStringWidth(tailAssay) / 2, 66,
+				4210752);
+
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 8, 26, 16, 16, guiLeft, guiTop)) {
 			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.prevIsotope")}), mouseX-guiLeft, mouseY-guiTop);
 		}
@@ -63,28 +76,27 @@ public class GuiGasCentrifuge extends GuiContainer {
 			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.nextIsotope")}), mouseX-guiLeft, mouseY-guiTop);
 		}
 		
-		String prodAssay = container.tile.getProductAssay()/100d + "%";
-		fontRendererObj.drawString(prodAssay,
-				69 - fontRendererObj.getStringWidth(prodAssay) / 2, 49,
-				4210752);
+		List<String> sizeChange = Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.size.2"),I18n.format("text.nuclearsciences.centrifuge.size.1"),I18n.format("text.nuclearsciences.centrifuge.size.0." + (Minecraft.IS_RUNNING_ON_MAC ? "1" : "0"))});
 		
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 8, 44, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.positive." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			List<String> tooltip = new ArrayList<String>(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.positive." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}));
+			tooltip.addAll(sizeChange);
+			drawHoveringText(tooltip, mouseX-guiLeft, mouseY-guiTop);
 		}
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 114, 44, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.negative." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			List<String> tooltip = new ArrayList<String>(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.product.negative." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}));
+			tooltip.addAll(sizeChange);
+			drawHoveringText(tooltip, mouseX-guiLeft, mouseY-guiTop);
 		}
-		
-		String tailAssay = container.tile.getTailsAssay()/100d + "%";
-		fontRendererObj.drawString(tailAssay,
-				69 - fontRendererObj.getStringWidth(tailAssay) / 2, 66,
-				4210752);
-		
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 8, 62, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.positive." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			List<String> tooltip = new ArrayList<String>(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.positive." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}));
+			tooltip.addAll(sizeChange);
+			drawHoveringText(tooltip, mouseX-guiLeft, mouseY-guiTop);
 		}
 		if (GuiUtil.isMouseIn(mouseX, mouseY, 114, 62, 16, 16, guiLeft, guiTop)) {
-			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.negative." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}), mouseX-guiLeft, mouseY-guiTop);
+			List<String> tooltip = new ArrayList<String>(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.centrifuge.tails.negative." + (1 - (GuiScreen.isAltKeyDown()?1:0) - (GuiScreen.isShiftKeyDown()?1:0) + (GuiScreen.isCtrlKeyDown()?1:0)))}));
+			tooltip.addAll(sizeChange);
+			drawHoveringText(tooltip, mouseX-guiLeft, mouseY-guiTop);
 		}
 		
 		/*

@@ -3,6 +3,9 @@ tile.nuclearsciences.radioactiveStone.name=Radioactive Stone
 tile.nuclearsciences.rtg.name=Radioisotope Thermoelectric Generator
 tile.nuclearsciences.hydraulicSeparator.name=Hydraulic Separator
 tile.nuclearsciences.chemicalSeparator.name=Chemical Separator
+tile.nuclearsciences.vaporizer.name=Vaporizer
+tile.nuclearsciences.centrifuge.name=Centrifuge
+tile.nuclearsciences.condensor.name=Condensor
 
 #Items
 item.nuclearsciences.material.name=Lump of Material

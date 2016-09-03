@@ -3,9 +3,10 @@
   "defaults": {
     "textures": {
        "top": "nuclearsciences:blocks/condensor_top",
+       "bottom": "nuclearsciences:blocks/condensor_bottom",
        "side": "nuclearsciences:blocks/condensor_side"
     },
-    "model": "nuclearsciences:rtg"
+    "model": "nuclearsciences:topSideBottomBlock"
   },
   "variants": {
     "normal": [{}],

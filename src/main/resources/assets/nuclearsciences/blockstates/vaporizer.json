@@ -3,9 +3,10 @@
   "defaults": {
     "textures": {
        "top": "nuclearsciences:blocks/vaporizer_top",
+       "bottom": "nuclearsciences:blocks/vaporizer_bottom",
        "side": "nuclearsciences:blocks/vaporizer_side"
     },
-    "model": "nuclearsciences:rtg"
+    "model": "nuclearsciences:topSideBottomBlock"
   },
   "variants": {
     "normal": [{}],

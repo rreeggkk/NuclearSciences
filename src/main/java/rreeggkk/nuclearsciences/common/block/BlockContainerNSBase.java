@@ -14,11 +14,11 @@ import rreeggkk.nuclearsciences.common.Constants;
 
 public abstract class BlockContainerNSBase extends BlockNSBase implements ITileEntityProvider {
 
-	public BlockContainerNSBase(Material materialIn, String name, Class<? extends TileEntity> tileClass, String tileRegister) {
-		this(materialIn, materialIn.getMaterialMapColor(), name, tileClass, tileRegister);
+	public BlockContainerNSBase(Material materialIn, String name, Class<? extends TileEntity> tileClass) {
+		this(materialIn, materialIn.getMaterialMapColor(), name, tileClass);
 	}
 
-	public BlockContainerNSBase(Material blockMaterialIn, MapColor blockMapColorIn, String name, Class<? extends TileEntity> tileClass, String tileRegister) {
+	public BlockContainerNSBase(Material blockMaterialIn, MapColor blockMapColorIn, String name, Class<? extends TileEntity> tileClass) {
 		super(blockMaterialIn, blockMapColorIn, name);
 		
 		GameRegistry.registerTileEntity(tileClass, Constants.MOD_ID + ":tile" + name);

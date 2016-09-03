@@ -24,7 +24,7 @@ public class BlockChemicalSeparator extends BlockContainerNSBase {
 	public static final PropertyBool RUNNING = PropertyBool.create("running");
 
 	public BlockChemicalSeparator() {
-		super(Material.IRON, "chemicalSeparator", TileEntityChemicalSeparator.class, "tileChemicalSeparator");
+		super(Material.IRON, "chemicalSeparator", TileEntityChemicalSeparator.class);
 
 		setHardness(5.0F);
 		setResistance(10.0F);

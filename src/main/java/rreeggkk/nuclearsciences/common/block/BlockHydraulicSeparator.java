@@ -26,7 +26,7 @@ public class BlockHydraulicSeparator extends BlockContainerNSBase {
 	public static final PropertyBool RUNNING = PropertyBool.create("running");
 
 	public BlockHydraulicSeparator() {
-		super(Material.IRON, "hydraulicSeparator", TileEntityHydraulicSeparator.class, "tileHydraulicSeparator");
+		super(Material.IRON, "hydraulicSeparator", TileEntityHydraulicSeparator.class);
 
 		setHardness(5.0F);
 		setResistance(10.0F);

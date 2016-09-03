@@ -35,7 +35,7 @@ public class BlockCentrifuge extends BlockContainerNSBase {
 	public static final AxisAlignedBB Z_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.25D, 1.0D, 1.0D, 0.75D);
 
 	public BlockCentrifuge() {
-		super(Material.IRON, "centrifuge", TileEntityCentrifuge.class, "tileCentrifuge");
+		super(Material.IRON, "centrifuge", TileEntityCentrifuge.class);
 
 		setHardness(5.0F);
 		setResistance(10.0F);

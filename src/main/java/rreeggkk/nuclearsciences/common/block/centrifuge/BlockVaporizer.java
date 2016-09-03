@@ -18,7 +18,7 @@ import rreeggkk.nuclearsciences.common.tile.centrifuge.TileEntityVaporizer;
 public class BlockVaporizer extends BlockContainerNSBase {
 
     public BlockVaporizer() {
-		super(Material.IRON, "vaporizer", TileEntityVaporizer.class, "tileVaporizer");
+		super(Material.IRON, "vaporizer", TileEntityVaporizer.class);
 		
 		setHardness(5.0F);
 		setResistance(10.0F);

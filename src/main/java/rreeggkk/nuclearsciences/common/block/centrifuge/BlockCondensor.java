@@ -17,7 +17,7 @@ import rreeggkk.nuclearsciences.common.tile.centrifuge.TileEntityCondensor;
 
 public class BlockCondensor extends BlockContainerNSBase {
 	public BlockCondensor() {
-		super(Material.IRON, "condensor", TileEntityCondensor.class, "tileCondensor");
+		super(Material.IRON, "condensor", TileEntityCondensor.class);
 
 		setHardness(5.0F);
 		setResistance(10.0F);

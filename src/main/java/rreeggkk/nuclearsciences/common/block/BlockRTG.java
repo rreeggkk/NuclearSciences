@@ -17,7 +17,7 @@ import rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
 public class BlockRTG extends BlockContainerNSBase {
 
     public BlockRTG() {
-		super(Material.IRON, "rtg", TileEntityRTG.class, "tileRTG");
+		super(Material.IRON, "rtg", TileEntityRTG.class);
 		
 		setHardness(5.0F);
 		setResistance(10.0F);

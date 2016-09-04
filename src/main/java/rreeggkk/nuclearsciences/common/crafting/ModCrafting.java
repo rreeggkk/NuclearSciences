@@ -34,7 +34,8 @@ public class ModCrafting {
 					'b', new ItemStack(Items.BUCKET),
 					'g', new ItemStack(Items.GOLD_INGOT),
 					'r', new ItemStack(Blocks.REDSTONE_BLOCK));
-
+			
+			/*
 			GameRegistry.addRecipe(new ItemStack(ModItems.irpanel), 
 					"igi",
 					"grg",
@@ -50,7 +51,7 @@ public class ModCrafting {
 					'i', new ItemStack(Items.IRON_INGOT),
 					'r', new ItemStack(Items.REDSTONE),
 					'g', new ItemStack(Items.GOLD_NUGGET),
-					'p', new ItemStack(Blocks.PISTON));
+					'p', new ItemStack(Blocks.PISTON));*/
 		}
 	}
 }

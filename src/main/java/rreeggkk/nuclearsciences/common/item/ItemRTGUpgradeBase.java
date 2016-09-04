@@ -6,18 +6,18 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
-public class ItemRTGUpgradeBase extends ItemNSBase implements RTGUpgrade {
+public class ItemRTGUpgradeBase extends ItemMultiNSBase implements RTGUpgrade {
 	
-	private double eff;
+	private double[] effs;
 	
-	public ItemRTGUpgradeBase(double eff, String name) {
-		super(name);
-		this.eff = eff;
+	public ItemRTGUpgradeBase(double[] effs, String[] names) {
+		super("rtgUpgrade", names);
+		this.effs = effs;
 	}
 	
 	@Override
 	public void addInformation(ItemStack stack, EntityPlayer playerIn, List<String> tooltip, boolean advanced) {
-		tooltip.add(I18n.format("text.nuclearsciences.rtgupgrade.tooltip", eff*100));
+		tooltip.add(I18n.format("text.nuclearsciences.rtgupgrade.tooltip", effs[stack.getItemDamage()]*100));
 	}
 
 	@Override
@@ -25,6 +25,6 @@ public class ItemRTGUpgradeBase extends ItemNSBase implements RTGUpgrade {
 		if (stack.getItem() != this) {
 			return 0;
 		}
-		return eff;
+		return effs[stack.getItemDamage()];
 	}
 }

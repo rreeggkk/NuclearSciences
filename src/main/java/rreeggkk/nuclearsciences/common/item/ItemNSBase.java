@@ -17,7 +17,7 @@ public class ItemNSBase extends Item {
 		GameRegistry.register(this);
 		
 		if (NuclearSciences.proxy.getSide() == Side.CLIENT) {
-			ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "normal"));
+			ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(getRegistryName(), "inventory"));
 		}
 	}
 }

@@ -1,9 +1,8 @@
 package rreeggkk.nuclearsciences.common.tile;
 
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.apfloat.Apfloat;
 
@@ -19,53 +18,43 @@ import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 import rreeggkk.nuclearsciences.NuclearSciences;
-import rreeggkk.nuclearsciences.common.block.BlockHydraulicSeparator;
+import rreeggkk.nuclearsciences.common.Constants;
+import rreeggkk.nuclearsciences.common.block.BlockFuelPacker;
 import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
-import rreeggkk.nuclearsciences.common.nuclear.element.IElement;
-import rreeggkk.nuclearsciences.common.nuclear.registry.IsotopeRegistry;
+import rreeggkk.nuclearsciences.common.nuclear.fuel.FuelType;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.ItemStackUtil;
-import rreeggkk.nuclearsciences.common.util.RandomUtil;
 
-public class TileEntityChemicalSeparator extends TileEntity implements ISidedInventory, ITickable {
+public class TileEntityFuelPacker extends TileEntity implements ISidedInventory, ITickable {
 
 	private IntEnergyContainer energy;
 
-	private ItemStack[] inventory = new ItemStack[2];
+	private ItemStack[] inventory = new ItemStack[3];
 
 	private int currentEnergy;
 	private ItemStack output;
 	private int energyNeeded;
+	private FuelType fuelType;
 
-	public TileEntityChemicalSeparator() {
+	public TileEntityFuelPacker() {
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
 	}
 
 	@Override
 	public void update() {
 		if (!worldObj.isRemote) {
-			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial) {
-				int numElements = getNumElements(inventory[0]);
-				if (numElements<=1) {
-					energyNeeded = 0;
-					currentEnergy = 0;
-					output = inventory[0].splitStack(1);
-					if (inventory[0].stackSize == 0) {
-						inventory[0] = null;
-					}
-				} else if (numElements > 1) {
-					energyNeeded = NuclearSciences.instance.config.chemicalSeparatorEnergyPerOperation;
-					currentEnergy = 0;
-					ItemStack[] outputs = getOutput(inventory[0]);
-					
-					output = outputs[1];
-					inventory[0] = outputs[0];
-					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
-				}
+			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial && fuelType != null && eatExtraInput()) {
+				energyNeeded = NuclearSciences.instance.config.fuelPackerEnergyPerPack;
+				currentEnergy = 0;
+				ItemStack[] outputs = getOutput(inventory[0]);
+
+				output = outputs[1];
+				inventory[0] = outputs[0];
+				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
 			} else {
-				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 			}
 			if (output != null) {
 				if (currentEnergy < energyNeeded) {
@@ -88,7 +77,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 						inventory[1].stackSize += output.stackSize;
 						output = null;
 					} else {
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 					}
 				}
 			}
@@ -102,48 +91,56 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 		return (int) ((double)currentEnergy/energyNeeded * Math.pow(10, point));
 	}
 
-	private boolean isValidInput(ItemStack stack) {
-		return stack.getItem() == ModItems.nuclearMaterial && getNumElements(stack)>1;
-	}
-	
-	private int getNumElements(ItemStack stack) {
-		return (int) ModItems.nuclearMaterial.getContentsMass(stack).keySet().stream().map((i)->i.getElement()).distinct().count();
-	}
-
-	private ItemStack[] getOutput(ItemStack stack) {
-		HashMap<String, Apfloat> contents = ModItems.nuclearMaterial.getContents(stack);
-		
-		IElement<?> element = RandomUtil.randomItem(ModItems.nuclearMaterial.getContentsMass(stack).keySet().stream().map((i)->i.getElement()).distinct().collect(Collectors.toList()));
-		
-		HashMap<String, Apfloat> newContents = new HashMap<>();
-
-		Iterator<Entry<String, Apfloat>> iter = contents.entrySet().iterator();
-		while (iter.hasNext()) {
-			Entry<String, Apfloat> e = iter.next();
-			AIsotope<?,?> iso = IsotopeRegistry.get(e.getKey());
-			if (iso != null && iso.getElement() == element) {
-				iter.remove();
-				newContents.put(e.getKey(), e.getValue());
-			}
-		}
-
-		ItemStack[] outputs = new ItemStack[2];
-
-		//New Input
-		outputs[0] = ModItems.nuclearMaterial.setContents(new ItemStack(ModItems.nuclearMaterial), contents);
-
-		//New Output
-		outputs[1] = ModItems.nuclearMaterial.setContents(new ItemStack(ModItems.nuclearMaterial), newContents);
-
-		return outputs;
-	}
-
 	private double getMaxRunFraction() {
 		return energy.getFraction();
 	}
 
 	private int getMaxEnergyPerTick() {
 		return (int) energy.getOutputRate();
+	}
+	
+	private ItemStack[] getOutput(ItemStack stack) {
+		Map<AIsotope<?,?>, Apfloat> contents = ModItems.nuclearMaterial.getContentsMass(stack);
+		Apfloat totalMass = ModItems.nuclearMaterial.getTotalMass(contents);
+		
+		Map<AIsotope<?,?>, Apfloat> newContents = new HashMap<>();
+		
+		for (Entry<AIsotope<?,?>, Apfloat> e : contents.entrySet()) {
+			newContents.put(e.getKey(), e.getValue().divide(totalMass).multiply(fuelType.getGramsPerComponent().precision(Constants.PRECISION)));
+			contents.put(e.getKey(), e.getValue().subtract(newContents.get(e.getKey())));
+		}
+		
+		ItemStack[] output = new ItemStack[2];
+		
+		output[0] = new ItemStack(ModItems.nuclearMaterial);
+		
+		ModItems.nuclearMaterial.setContentsMass(output[0], newContents);
+		
+		output[1] = fuelType.getItem().copy();
+		
+		ModItems.nuclearMaterial.setContentsMass(output[1], newContents);
+		
+		return output;
+	}
+	
+	private boolean eatExtraInput() {
+		if (fuelType.getInputItem() == null) {
+			return true;
+		} else {
+			if (ItemStackUtil.areItemStacksEqual(fuelType.getInputItem(), inventory[2])) {
+				if (inventory[2].stackSize >= fuelType.getInputItem().stackSize) {
+					inventory[2].splitStack(fuelType.getInputItem().stackSize);
+					if (inventory[2].stackSize == 0) {
+						inventory[2] = null;
+					}
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
 	}
 
 	@Override
@@ -248,7 +245,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
-		return index == 0 && isValidInput(stack);
+		return index == 0 && stack.getItem() == ModItems.nuclearMaterial;
 	}
 
 	@Override
@@ -271,7 +268,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	@Override
 	public String getName() {
-		return "container.nuclearsciences.chemicalseparator.name";
+		return "container.nuclearsciences.fuelpacker.name";
 	}
 
 	@Override
@@ -313,5 +310,13 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	public IntEnergyContainer getEnergy() {
 		return energy;
+	}
+	
+	public FuelType getFuelType() {
+		return fuelType;
+	}
+	
+	public void setFuelType(FuelType fuelType) {
+		this.fuelType = fuelType;
 	}
 }

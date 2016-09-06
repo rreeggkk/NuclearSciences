@@ -10,6 +10,7 @@ public class ModBlocks {
 	public static BlockRTG rtg;
 	public static BlockHydraulicSeparator hydraulicSeparator;
 	public static BlockChemicalSeparator chemicalSeparator;
+	public static BlockFuelPacker fuelPacker;
 	
 	public static BlockVaporizer vaporizer;
 	public static BlockCentrifuge centrifuge;
@@ -20,6 +21,7 @@ public class ModBlocks {
 		rtg = new BlockRTG();
 		hydraulicSeparator = new BlockHydraulicSeparator();
 		chemicalSeparator = new BlockChemicalSeparator();
+		fuelPacker = new BlockFuelPacker();
 		
 		vaporizer = new BlockVaporizer();
 		centrifuge = new BlockCentrifuge();

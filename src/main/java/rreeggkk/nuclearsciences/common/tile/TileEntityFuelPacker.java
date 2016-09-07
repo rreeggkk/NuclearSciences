@@ -24,8 +24,10 @@ import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
 import rreeggkk.nuclearsciences.common.nuclear.fuel.FuelType;
+import rreeggkk.nuclearsciences.common.nuclear.fuel.FuelTypes;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.ItemStackUtil;
+import rreeggkk.nuclearsciences.common.util.NuclearMaterialUtil;
 
 public class TileEntityFuelPacker extends TileEntity implements ISidedInventory, ITickable {
 
@@ -45,10 +47,10 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	@Override
 	public void update() {
 		if (!worldObj.isRemote) {
-			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial && fuelType != null && eatExtraInput()) {
+			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial && fuelType != null && ModItems.nuclearMaterial.getTotalMass(inventory[0]).compareTo(fuelType.getGramsPerComponent()) >= 0 && eatExtraInput()) {
 				energyNeeded = NuclearSciences.instance.config.fuelPackerEnergyPerPack;
 				currentEnergy = 0;
-				ItemStack[] outputs = getOutput(inventory[0]);
+				ItemStack[] outputs = getOutput(inventory[0], inventory[1]);
 
 				output = outputs[1];
 				inventory[0] = outputs[0];
@@ -73,7 +75,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 					if (inventory[1] == null || inventory[1].stackSize == 0) {
 						inventory[1] = output.copy();
 						output = null;
-					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
+					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output) && inventory[1].stackSize + output.stackSize <= 64) {
 						inventory[1].stackSize += output.stackSize;
 						output = null;
 					} else {
@@ -98,31 +100,38 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	private int getMaxEnergyPerTick() {
 		return (int) energy.getOutputRate();
 	}
-	
-	private ItemStack[] getOutput(ItemStack stack) {
+
+	private ItemStack[] getOutput(ItemStack stack, ItemStack tryFit) {
 		Map<AIsotope<?,?>, Apfloat> contents = ModItems.nuclearMaterial.getContentsMass(stack);
-		Apfloat totalMass = ModItems.nuclearMaterial.getTotalMass(contents);
-		
+		Apfloat totalMass = ModItems.nuclearMaterial.getTotalMass(contents).precision(Constants.PRECISION);
+
 		Map<AIsotope<?,?>, Apfloat> newContents = new HashMap<>();
-		
+
 		for (Entry<AIsotope<?,?>, Apfloat> e : contents.entrySet()) {
-			newContents.put(e.getKey(), e.getValue().divide(totalMass).multiply(fuelType.getGramsPerComponent().precision(Constants.PRECISION)));
-			contents.put(e.getKey(), e.getValue().subtract(newContents.get(e.getKey())));
+			newContents.put(e.getKey(), e.getValue().precision(Constants.PRECISION).divide(totalMass).multiply(fuelType.getGramsPerComponent().precision(Constants.PRECISION)).precision(Constants.PRECISION));
 		}
 		
+		if (tryFit != null && fuelType != null && tryFit.getItem() == fuelType.getOutputItem().getItem() && tryFit.getItemDamage() == fuelType.getOutputItem().getItemDamage() && NuclearMaterialUtil.areCloseEnough(newContents, ModItems.nuclearFuel.getContentsMass(tryFit))) {
+			newContents = ModItems.nuclearFuel.getContentsMass(tryFit);
+		}
+
+		for (Entry<AIsotope<?,?>, Apfloat> e : newContents.entrySet()) {
+			contents.put(e.getKey(), contents.get(e.getKey()).precision(Constants.PRECISION).subtract(e.getValue()).precision(Constants.PRECISION));
+		}
+
 		ItemStack[] output = new ItemStack[2];
-		
+
 		output[0] = new ItemStack(ModItems.nuclearMaterial);
-		
-		ModItems.nuclearMaterial.setContentsMass(output[0], newContents);
-		
-		output[1] = fuelType.getItem().copy();
-		
-		ModItems.nuclearMaterial.setContentsMass(output[1], newContents);
-		
+
+		ModItems.nuclearMaterial.setContentsMass(output[0], contents);
+
+		output[1] = fuelType.getOutputItem().copy();
+
+		ModItems.nuclearFuel.setContentsMass(output[1], newContents);
+
 		return output;
 	}
-	
+
 	private boolean eatExtraInput() {
 		if (fuelType.getInputItem() == null) {
 			return true;
@@ -161,9 +170,13 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
 		
+		if (compound.hasKey("FuelType")) {
+			fuelType = FuelTypes.getFuelTypes().stream().filter((p)->p.getUID().equals(compound.getString("FuelType"))).findFirst().orElse(null);
+		}
+
 		if (compound.hasKey("Processing")) {
 			output = ItemStack.loadItemStackFromNBT(compound.getCompoundTag("POutput"));
-			
+
 			currentEnergy = compound.getInteger("PEnergy");
 			energyNeeded = compound.getInteger("NEnergy");
 		}
@@ -186,18 +199,21 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 		}
 		compound.setTag("Items", nbttaglist);
 		compound.setTag("Energy", energy.serializeNBT());
-		
+		if (fuelType != null) {
+			compound.setString("FuelType", fuelType.getUID());
+		}
+
 		if (output != null) {
 			compound.setBoolean("Processing", true);
-			
+
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
 			output.writeToNBT(nbttagcompound);
 			compound.setTag("POutput", output.serializeNBT());
-			
+
 			compound.setInteger("PEnergy", currentEnergy);
 			compound.setInteger("NEnergy", energyNeeded);
 		}
-		
+
 		return compound;
 	}
 	@Override
@@ -311,11 +327,11 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	public IntEnergyContainer getEnergy() {
 		return energy;
 	}
-	
+
 	public FuelType getFuelType() {
 		return fuelType;
 	}
-	
+
 	public void setFuelType(FuelType fuelType) {
 		this.fuelType = fuelType;
 	}

@@ -27,9 +27,9 @@ public class ContainerFuelPacker extends Container {
 		int playerInvOffY = 12;
 
 		tile = tilee;
-		addSlotToContainer(new MachineSlot(tilee, 0, 44, 36));
-		addSlotToContainer(new MachineSlot(tilee, 1, 116, 36));
-		addSlotToContainer(new MachineSlot(tilee, 2, 0, 36));
+		addSlotToContainer(new MachineSlot(tilee, 0, 44, 25));
+		addSlotToContainer(new MachineSlot(tilee, 1, 116, 25));
+		addSlotToContainer(new MachineSlot(tilee, 2, 23, 25));
 
 		for (int x = 0; x < 9; x++) {
 			addSlotToContainer(new Slot(player, x, 8 + 18 * x + playerInvOffX,
@@ -76,7 +76,7 @@ public class ContainerFuelPacker extends Container {
 			lastFixedPoint = val;
 		} else if (id == 1) {
 			tile.getEnergy().setStored(val);
-		} else if (id == 2) {
+		} else if (id == 2 && val != -1) {
 			tile.setFuelType(FuelTypes.getFuelTypes().get(val));
 		}
 	}

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apfloat.Apfloat;
+import org.apfloat.ApfloatMath;
 
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
@@ -52,5 +53,24 @@ public class NuclearMaterialUtil {
 		}
 		
 		return newMap;
+	}
+	
+	public static <T> boolean areCloseEnough(Map<T, Apfloat> map1, Map<T, Apfloat> map2) {
+		return areCloseEnough(map1, map2, new Apfloat("1E-32", Constants.PRECISION));
+	}
+	
+	public static <T> boolean areCloseEnough(Map<T, Apfloat> map1, Map<T, Apfloat> map2, Apfloat epsilon) {
+		HashMap<T, Apfloat> newMap = new HashMap<T, Apfloat>();
+		
+		newMap.putAll(map1);
+		
+		for (Entry<T, Apfloat> e : map2.entrySet()) {
+			if (!newMap.containsKey(e.getKey())) {
+				return false;
+			}
+			newMap.put(e.getKey(), ApfloatMath.abs(e.getValue().subtract(newMap.getOrDefault(e.getKey(), new Apfloat(0))).precision(Constants.PRECISION)));
+		}
+		
+		return newMap.values().stream().allMatch((v)->v.compareTo(epsilon)<=0);
 	}
 }

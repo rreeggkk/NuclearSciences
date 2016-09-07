@@ -6,20 +6,22 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 
 public class FuelType {
-	protected String name;
+	protected String name, uid;
 	protected Apfloat massPerComponent;
 	protected ItemStack item;
 	protected ItemStack inputItem;
 	
-	public FuelType(String name, Apfloat gramsPerComponent) {
+	public FuelType(String name, Apfloat gramsPerComponent, String uid) {
 		this.name = name;
 		this.massPerComponent = gramsPerComponent;
+		this.uid = uid;
 	}
 	
-	public FuelType(String name, Apfloat gramsPerComponent, ItemStack inputItem) {
+	public FuelType(String name, Apfloat gramsPerComponent, String uid, ItemStack inputItem) {
 		this.name = name;
 		this.massPerComponent = gramsPerComponent;
 		this.inputItem = inputItem;
+		this.uid = uid;
 	}
 
 	public String getName() {
@@ -37,7 +39,7 @@ public class FuelType {
 	/**
 	 * @return the item
 	 */
-	public ItemStack getItem() {
+	public ItemStack getOutputItem() {
 		return item;
 	}
 
@@ -50,5 +52,9 @@ public class FuelType {
 	
 	public ItemStack getInputItem() {
 		return inputItem;
+	}
+	
+	public String getUID() {
+		return uid;
 	}
 }

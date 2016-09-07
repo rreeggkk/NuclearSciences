@@ -11,11 +11,12 @@ import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.client.gui.util.GuiUtil;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.inventory.ContainerFuelPacker;
+import rreeggkk.nuclearsciences.common.nuclear.fuel.FuelType;
 import scala.actors.threadpool.Arrays;
 
 public class GuiFuelPacker extends GuiContainer {
 	
-	private static final ResourceLocation mainGUITexture = new ResourceLocation(Constants.MOD_ID + ":textures/gui/container/chemicalSeparator.png");
+	private static final ResourceLocation mainGUITexture = new ResourceLocation(Constants.MOD_ID + ":textures/gui/container/fuelPacker.png");
 	
 	private ContainerFuelPacker container;
 	
@@ -39,7 +40,7 @@ public class GuiFuelPacker extends GuiContainer {
 
 		mc.getTextureManager().bindTexture(mainGUITexture);
 
-		drawTexturedModalRect(guiLeft + 77, guiTop + 36, 176, 0, (int)(24 * container.getCompletion()), 17);
+		drawTexturedModalRect(guiLeft + 77, guiTop + 25, 176, 0, (int)(24 * container.getCompletion()), 17);
 	}
 	
 	
@@ -58,6 +59,19 @@ public class GuiFuelPacker extends GuiContainer {
 				I18n.format("container.inventory", new Object[0]), 28,
 				ySize - 96 + 2, 4210752);
 		
+		FuelType fuelType = container.tile.getFuelType();
+		String isotope = (fuelType == null ? I18n.format("text.nuclearsciences.fuelPacker.noType") : fuelType.getLocalizedName());
+		fontRendererObj.drawString(isotope,
+				68 - fontRendererObj.getStringWidth(isotope) / 2, 52,
+				4210752);
+		
+		if (GuiUtil.isMouseIn(mouseX, mouseY, 7, 48, 16, 16, guiLeft, guiTop)) {
+			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.fuelPacker.prevType")}), mouseX-guiLeft, mouseY-guiTop);
+		}
+		if (GuiUtil.isMouseIn(mouseX, mouseY, 113, 48, 16, 16, guiLeft, guiTop)) {
+			drawHoveringText(Arrays.asList(new String[]{I18n.format("text.nuclearsciences.fuelPacker.nextType")}), mouseX-guiLeft, mouseY-guiTop);
+		}
+
 		if (mouseX>guiLeft + 152 && mouseX<guiLeft + 170 && mouseY>guiTop + 7 && mouseY<guiTop + 78) {
 			drawHoveringText(Arrays.asList(new String[]{container.tile.getEnergy().getStored() + "/" + container.tile.getEnergy().getCapacity() + " " + NuclearSciences.instance.config.energyUnit}), mouseX-guiLeft, mouseY-guiTop);
 		}
@@ -65,6 +79,13 @@ public class GuiFuelPacker extends GuiContainer {
 	
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+		if (GuiUtil.isMouseIn(mouseX, mouseY, 7, 48, 16, 16, guiLeft, guiTop)) {
+			mc.playerController.sendEnchantPacket(container.windowId, 0);
+		}
+		if (GuiUtil.isMouseIn(mouseX, mouseY, 113, 48, 16, 16, guiLeft, guiTop)) {
+			mc.playerController.sendEnchantPacket(container.windowId, 1);
+		}
+		
 		super.mouseClicked(mouseX, mouseY, mouseButton);
 	}
 }

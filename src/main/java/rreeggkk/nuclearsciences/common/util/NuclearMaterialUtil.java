@@ -56,7 +56,7 @@ public class NuclearMaterialUtil {
 	}
 	
 	public static <T> boolean areCloseEnough(Map<T, Apfloat> map1, Map<T, Apfloat> map2) {
-		return areCloseEnough(map1, map2, new Apfloat("1E-32", Constants.PRECISION));
+		return areCloseEnough(map1, map2, new Apfloat("1E-112", Constants.PRECISION));
 	}
 	
 	public static <T> boolean areCloseEnough(Map<T, Apfloat> map1, Map<T, Apfloat> map2, Apfloat epsilon) {

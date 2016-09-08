@@ -6,17 +6,27 @@ tile.nuclearsciences.chemicalSeparator.name=Chemical Separator
 tile.nuclearsciences.vaporizer.name=Vaporizer
 tile.nuclearsciences.centrifuge.name=Centrifuge
 tile.nuclearsciences.condensor.name=Condensor
+tile.nuclearsciences.fuelPacker.name=Fuel Packer
 
 #Items
 item.nuclearsciences.material.name=Lump of Material
 item.nuclearsciences.irpanel.name=IR Photovoltaic Panel Upgrade
 item.nuclearsciences.stirling.name=Stirling Cycle Generator Upgrade
+item.nuclearsciences.pellet.name=Nuclear Fuel Pellet
+item.nuclearsciences.pebble.name=Nuclear Fuel Pebble
+item.nuclearsciences.salt.name=Nuclear Fuel Salt Crystal
+
+#Fuel Types
+nuclearsciences.fueltype.pellet.name=Pellet
+nuclearsciences.fueltype.pebble.name=Pebble
+nuclearsciences.fueltype.salt.name=Salt
 
 #Containers
 container.nuclearsciences.rtg.name=RTG
 container.nuclearsciences.hydraulicseparator.name=Hydraulic Separator
 container.nuclearsciences.chemicalseparator.name=Chemical Separator
 container.nuclearsciences.gascentrifuge.name=Centrifuge
+container.nuclearsciences.fuelpacker.name=Fuel Packer
 
 #UI
 text.nuclearsciences.hydraulicSeparator.mBWater=mB of Water
@@ -29,6 +39,11 @@ text.nuclearsciences.material.shift=Hold §eSHIFT§7 to see more data
 text.nuclearsciences.material.command=Hold §eCOMMAND§7 to see more data
 text.nuclearsciences.material.control=Hold §eCONTROL§7 to see more data
 text.nuclearsciences.material.totalMass=Total Mass: %s
+text.nuclearsciences.fuelPacker.noType=No Fuel Type
+text.nuclearsciences.fuelPacker.nextType=Next Fuel Type
+text.nuclearsciences.fuelPacker.prevType=Previous Fuel Type
+
+#Centrifuge Specific Tooltips
 text.nuclearsciences.centrifuge.noIsotope=No Isotope
 text.nuclearsciences.centrifuge.nextIsotope=Next Isotope
 text.nuclearsciences.centrifuge.prevIsotope=Previous Isotope

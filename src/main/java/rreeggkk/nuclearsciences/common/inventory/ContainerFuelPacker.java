@@ -19,7 +19,7 @@ public class ContainerFuelPacker extends Container {
 	
 	private int lastEnergy;
 	private int lastFixedPoint;
-	private int lastFuelTypeIndex;
+	private int lastFuelTypeIndex=-1;
 
 	public ContainerFuelPacker(InventoryPlayer player,
 			TileEntityFuelPacker tilee) {

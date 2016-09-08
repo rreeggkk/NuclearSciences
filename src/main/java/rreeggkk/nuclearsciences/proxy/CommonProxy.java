@@ -14,6 +14,7 @@ import rreeggkk.nuclearsciences.common.element.ElementRegister;
 import rreeggkk.nuclearsciences.common.event.EventHandler;
 import rreeggkk.nuclearsciences.common.gui.GuiHandler;
 import rreeggkk.nuclearsciences.common.item.ModItems;
+import rreeggkk.nuclearsciences.common.nuclear.fuel.FuelTypes;
 
 public abstract class CommonProxy {
 	public void preInit(FMLPreInitializationEvent e) {
@@ -22,6 +23,7 @@ public abstract class CommonProxy {
 		NuclearSciences.instance.config.init();
 		
 		ElementRegister.register();
+		FuelTypes.registerDefaults();
 
 		ModBlocks.init();
 		ModItems.init();

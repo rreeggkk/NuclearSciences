@@ -47,14 +47,27 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	@Override
 	public void update() {
 		if (!worldObj.isRemote) {
-			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial && fuelType != null && ModItems.nuclearMaterial.getTotalMass(inventory[0]).compareTo(fuelType.getGramsPerComponent()) >= 0 && eatExtraInput()) {
-				energyNeeded = NuclearSciences.instance.config.fuelPackerEnergyPerPack;
-				currentEnergy = 0;
-				ItemStack[] outputs = getOutput(inventory[0], inventory[1]);
+			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial && fuelType != null) {
+				if (ModItems.nuclearMaterial.getTotalMass(inventory[0]).compareTo(fuelType.getGramsPerComponent()) >= 0) {
+					if (eatExtraInput()) {
+						energyNeeded = NuclearSciences.instance.config.fuelPackerEnergyPerPack;
+						currentEnergy = 0;
+						ItemStack[] outputs = getOutput(inventory[0], inventory[1]);
 
-				output = outputs[1];
-				inventory[0] = outputs[0];
-				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
+						output = outputs[1];
+						inventory[0] = outputs[0];
+						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
+					} else {
+						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+					}
+				} else {
+					energyNeeded = 0;
+					currentEnergy = 0;
+
+					output = inventory[0];
+					inventory[0] = null;
+					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
+				}
 			} else {
 				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 			}
@@ -110,9 +123,12 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 		for (Entry<AIsotope<?,?>, Apfloat> e : contents.entrySet()) {
 			newContents.put(e.getKey(), e.getValue().precision(Constants.PRECISION).divide(totalMass).multiply(fuelType.getGramsPerComponent().precision(Constants.PRECISION)).precision(Constants.PRECISION));
 		}
-		
+
+		boolean sameOut = false;
+
 		if (tryFit != null && fuelType != null && tryFit.getItem() == fuelType.getOutputItem().getItem() && tryFit.getItemDamage() == fuelType.getOutputItem().getItemDamage() && NuclearMaterialUtil.areCloseEnough(newContents, ModItems.nuclearFuel.getContentsMass(tryFit))) {
 			newContents = ModItems.nuclearFuel.getContentsMass(tryFit);
+			sameOut = true;
 		}
 
 		for (Entry<AIsotope<?,?>, Apfloat> e : newContents.entrySet()) {
@@ -125,9 +141,14 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 		ModItems.nuclearMaterial.setContentsMass(output[0], contents);
 
-		output[1] = fuelType.getOutputItem().copy();
+		if (sameOut) {
+			output[1] = tryFit.copy();
+			output[1].stackSize = 1;
+		} else {
+			output[1] = fuelType.getOutputItem().copy();
+			ModItems.nuclearFuel.setContentsMass(output[1], newContents);
+		}
 
-		ModItems.nuclearFuel.setContentsMass(output[1], newContents);
 
 		return output;
 	}
@@ -169,7 +190,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 		}
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
-		
+
 		if (compound.hasKey("FuelType")) {
 			fuelType = FuelTypes.getFuelTypes().stream().filter((p)->p.getUID().equals(compound.getString("FuelType"))).findFirst().orElse(null);
 		}
@@ -261,7 +282,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
-		return index == 0 && stack.getItem() == ModItems.nuclearMaterial;
+		return index == 0 ? stack.getItem() == ModItems.nuclearMaterial : (index == 2 && fuelType != null ? ItemStackUtil.areItemStacksEqual(stack, fuelType.getInputItem()) : false);
 	}
 
 	@Override

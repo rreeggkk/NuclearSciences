@@ -1,0 +1,28 @@
+{
+  "forge_marker": 1,
+  "defaults": {
+    "textures": {
+       "top": "nuclearsciences:blocks/fuelPacker_top",
+       "side": "nuclearsciences:blocks/fuelPacker_side",
+       "front": "nuclearsciences:blocks/fuelPacker_front_off"
+    },
+    "model": "nuclearsciences:topSideFrontBlock"
+  },
+  "variants": {
+    "facing": {
+      "north": {},
+      "south": { "y": 180 },
+      "west": { "y": 270 },
+      "east": { "y": 90 }
+    },
+    "running": {
+      "true": {
+        "textures": {
+          "front": "nuclearsciences:blocks/fuelPacker_front_on"
+        }
+      },
+      "false": {}
+    },
+    "inventory": [{}]
+  }
+}

@@ -76,11 +76,11 @@ public class BlockChemicalSeparator extends BlockContainerNSBase {
 	@Override
 	public int getMetaFromState(IBlockState state) {
 		// 0b0000 = XXXY; X = facing, Y = runining
-		return (state.getValue(FACING).getHorizontalIndex()+1) << 1 | (state.getValue(RUNNING).booleanValue() ? 1 : 0);
+		return ((state.getValue(FACING).getHorizontalIndex()+1) << 1) + (state.getValue(RUNNING).booleanValue() ? 1 : 0);
 	}
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return blockState.getBaseState().withProperty(RUNNING, (meta & 0b0001) == 1).withProperty(FACING, EnumFacing.getHorizontal((meta >>> 1) - 1));
+		return blockState.getBaseState().withProperty(RUNNING, (meta % 2) == 1).withProperty(FACING, EnumFacing.getHorizontal((meta >>> 1) - 1));
 	}
 }

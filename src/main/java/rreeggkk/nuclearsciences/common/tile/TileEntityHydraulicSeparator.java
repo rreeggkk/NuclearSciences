@@ -1,5 +1,6 @@
 package rreeggkk.nuclearsciences.common.tile;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -9,6 +10,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -56,10 +59,12 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 						if (inventory[0].stackSize == 0) {
 							inventory[0] = null;
 						}
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
+						if (!worldObj.getBlockState(pos).getValue(BlockHydraulicSeparator.RUNNING)){
+							worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
+						}
 					}
-				} else {
-					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+				} else if (worldObj.getBlockState(pos).getValue(BlockHydraulicSeparator.RUNNING)){
+					worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
 				}
 			}
 			if (output != null) {
@@ -91,8 +96,8 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
 						inventory[1].stackSize += output.stackSize;
 						output = null;
-					} else {
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+					} else if (worldObj.getBlockState(pos).getValue(BlockHydraulicSeparator.RUNNING)){
+						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
 					}
 				}
 			}
@@ -294,5 +299,10 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 
 	public IntEnergyContainer getEnergy() {
 		return energy;
+	}
+	
+	@Override
+	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+		return oldState.getBlock() != newState.getBlock();
 	}
 }

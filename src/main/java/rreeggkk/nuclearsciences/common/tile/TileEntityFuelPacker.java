@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.apfloat.Apfloat;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -15,6 +16,8 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 import rreeggkk.nuclearsciences.NuclearSciences;
@@ -56,9 +59,11 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 						output = outputs[1];
 						inventory[0] = outputs[0];
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
-					} else {
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+						if (!worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
+							worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
+						}
+					} else if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
+						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 					}
 				} else {
 					energyNeeded = 0;
@@ -66,10 +71,12 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 					output = inventory[0];
 					inventory[0] = null;
-					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
+					if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
+						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+					}
 				}
-			} else {
-				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+			} else if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
+				worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 			}
 			if (output != null) {
 				if (currentEnergy < energyNeeded) {
@@ -91,8 +98,8 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output) && inventory[1].stackSize + output.stackSize <= 64) {
 						inventory[1].stackSize += output.stackSize;
 						output = null;
-					} else {
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+					} else if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
+						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 					}
 				}
 			}
@@ -355,5 +362,10 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 	public void setFuelType(FuelType fuelType) {
 		this.fuelType = fuelType;
+	}
+
+	@Override
+	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+		return oldState.getBlock() != newState.getBlock();
 	}
 }

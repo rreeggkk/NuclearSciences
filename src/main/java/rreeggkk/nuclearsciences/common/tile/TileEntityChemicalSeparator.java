@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apfloat.Apfloat;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
@@ -16,10 +17,12 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 import rreeggkk.nuclearsciences.NuclearSciences;
-import rreeggkk.nuclearsciences.common.block.BlockHydraulicSeparator;
+import rreeggkk.nuclearsciences.common.block.BlockChemicalSeparator;
 import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
@@ -46,26 +49,30 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	@Override
 	public void update() {
 		if (!worldObj.isRemote) {
-			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial) {
-				int numElements = getNumElements(inventory[0]);
-				if (numElements<=1) {
-					energyNeeded = 0;
-					currentEnergy = 0;
-					output = inventory[0].splitStack(1);
-					if (inventory[0].stackSize == 0) {
-						inventory[0] = null;
+			if (output == null) {
+				if (inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial) {
+					int numElements = getNumElements(inventory[0]);
+					if (numElements<=1) {
+						energyNeeded = 0;
+						currentEnergy = 0;
+						output = inventory[0].splitStack(1);
+						if (inventory[0].stackSize == 0) {
+							inventory[0] = null;
+						}
+					} else if (numElements > 1) {
+						energyNeeded = NuclearSciences.instance.config.chemicalSeparatorEnergyPerOperation;
+						currentEnergy = 0;
+						ItemStack[] outputs = getOutput(inventory[0]);
+
+						output = outputs[1];
+						inventory[0] = outputs[0];
+						if (!worldObj.getBlockState(pos).getValue(BlockChemicalSeparator.RUNNING)){
+							worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockChemicalSeparator.RUNNING, true), 2);
+						}
 					}
-				} else if (numElements > 1) {
-					energyNeeded = NuclearSciences.instance.config.chemicalSeparatorEnergyPerOperation;
-					currentEnergy = 0;
-					ItemStack[] outputs = getOutput(inventory[0]);
-					
-					output = outputs[1];
-					inventory[0] = outputs[0];
-					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
+				} else if (worldObj.getBlockState(pos).getValue(BlockChemicalSeparator.RUNNING)){
+					worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockChemicalSeparator.RUNNING, false), 2);
 				}
-			} else {
-				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
 			}
 			if (output != null) {
 				if (currentEnergy < energyNeeded) {
@@ -87,8 +94,8 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
 						inventory[1].stackSize += output.stackSize;
 						output = null;
-					} else {
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+					} else if (worldObj.getBlockState(pos).getValue(BlockChemicalSeparator.RUNNING)){
+						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockChemicalSeparator.RUNNING, false), 2);
 					}
 				}
 			}
@@ -105,16 +112,16 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	private boolean isValidInput(ItemStack stack) {
 		return stack.getItem() == ModItems.nuclearMaterial && getNumElements(stack)>1;
 	}
-	
+
 	private int getNumElements(ItemStack stack) {
 		return (int) ModItems.nuclearMaterial.getContentsMass(stack).keySet().stream().map((i)->i.getElement()).distinct().count();
 	}
 
 	private ItemStack[] getOutput(ItemStack stack) {
 		HashMap<String, Apfloat> contents = ModItems.nuclearMaterial.getContents(stack);
-		
+
 		IElement<?> element = RandomUtil.randomItem(ModItems.nuclearMaterial.getContentsMass(stack).keySet().stream().map((i)->i.getElement()).distinct().collect(Collectors.toList()));
-		
+
 		HashMap<String, Apfloat> newContents = new HashMap<>();
 
 		Iterator<Entry<String, Apfloat>> iter = contents.entrySet().iterator();
@@ -163,10 +170,10 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 		}
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
-		
+
 		if (compound.hasKey("Processing")) {
 			output = ItemStack.loadItemStackFromNBT(compound.getCompoundTag("POutput"));
-			
+
 			currentEnergy = compound.getInteger("PEnergy");
 			energyNeeded = compound.getInteger("NEnergy");
 		}
@@ -189,18 +196,18 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 		}
 		compound.setTag("Items", nbttaglist);
 		compound.setTag("Energy", energy.serializeNBT());
-		
+
 		if (output != null) {
 			compound.setBoolean("Processing", true);
-			
+
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
 			output.writeToNBT(nbttagcompound);
 			compound.setTag("POutput", output.serializeNBT());
-			
+
 			compound.setInteger("PEnergy", currentEnergy);
 			compound.setInteger("NEnergy", energyNeeded);
 		}
-		
+
 		return compound;
 	}
 	@Override
@@ -313,5 +320,10 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	public IntEnergyContainer getEnergy() {
 		return energy;
+	}
+	
+	@Override
+	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+		return oldState.getBlock() != newState.getBlock();
 	}
 }

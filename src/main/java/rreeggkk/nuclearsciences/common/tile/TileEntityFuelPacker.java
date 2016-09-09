@@ -13,6 +13,8 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -43,6 +45,8 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	private int energyNeeded;
 	private FuelType fuelType;
 
+	private boolean running;
+
 	public TileEntityFuelPacker() {
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
 	}
@@ -59,11 +63,13 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 						output = outputs[1];
 						inventory[0] = outputs[0];
-						if (!worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
-							worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, true), 2);
+						if (!running){
+							running = true;
+							worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 						}
-					} else if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
-						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+					} else if (running) {
+						running = false;
+						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 					}
 				} else {
 					energyNeeded = 0;
@@ -75,8 +81,9 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 					}
 				}
-			} else if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
-				worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+			} else if (running) {
+				running = false;
+				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 			}
 			if (output != null) {
 				if (currentEnergy < energyNeeded) {
@@ -98,8 +105,9 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output) && inventory[1].stackSize + output.stackSize <= 64) {
 						inventory[1].stackSize += output.stackSize;
 						output = null;
-					} else if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
-						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+					} else if (running) {
+						running = false;
+						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 					}
 				}
 			}
@@ -367,5 +375,24 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	@Override
 	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
 		return oldState.getBlock() != newState.getBlock();
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	@Override
+	public SPacketUpdateTileEntity getUpdatePacket() {
+		NBTTagCompound nbt = new NBTTagCompound();
+		System.out.println("updatePacket");
+		nbt.setBoolean("Running", running);
+		return new SPacketUpdateTileEntity(getPos(), 0, nbt);
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		NBTTagCompound nbt = pkt.getNbtCompound();
+		running = nbt.getBoolean("Running");
+		worldObj.markBlockRangeForRenderUpdate(pos, pos);
 	}
 }

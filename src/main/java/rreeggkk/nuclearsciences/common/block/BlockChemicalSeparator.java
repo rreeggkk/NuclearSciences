@@ -14,6 +14,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import rreeggkk.nuclearsciences.NuclearSciences;
 import rreeggkk.nuclearsciences.common.gui.GuiHandler;
@@ -75,12 +76,17 @@ public class BlockChemicalSeparator extends BlockContainerNSBase {
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		// 0b0000 = XXXY; X = facing, Y = runining
-		return ((state.getValue(FACING).getHorizontalIndex()+1) << 1) + (state.getValue(RUNNING).booleanValue() ? 1 : 0);
+		return state.getValue(FACING).getHorizontalIndex();
 	}
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return blockState.getBaseState().withProperty(RUNNING, (meta % 2) == 1).withProperty(FACING, EnumFacing.getHorizontal((meta >>> 1) - 1));
+		return blockState.getBaseState().withProperty(FACING, EnumFacing.getHorizontal(meta));
+	}
+	
+	@Override
+	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+		TileEntity te = world.getTileEntity(pos);
+		return state.withProperty(RUNNING, te != null ? ((TileEntityChemicalSeparator)te).isRunning() : false);
 	}
 }

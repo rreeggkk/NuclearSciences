@@ -14,6 +14,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidUtil;
 import rreeggkk.nuclearsciences.NuclearSciences;
@@ -49,7 +50,6 @@ public class BlockHydraulicSeparator extends BlockContainerNSBase {
 	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side,
 			float hitX, float hitY, float hitZ) {
 
-
 		// Get the tile entity
 		TileEntity tileEntity = world.getTileEntity(pos);
 		// If the tile entity doesn't exsist or the player is sneaking
@@ -81,12 +81,17 @@ public class BlockHydraulicSeparator extends BlockContainerNSBase {
 
 	@Override
 	public int getMetaFromState(IBlockState state) {
-		// 0b0000 = XXXY; X = facing, Y = runining
-		return (state.getValue(FACING).getHorizontalIndex()+1) << 1 | (state.getValue(RUNNING).booleanValue() ? 1 : 0);
+		return state.getValue(FACING).getHorizontalIndex();
 	}
 
 	@Override
 	public IBlockState getStateFromMeta(int meta) {
-		return blockState.getBaseState().withProperty(RUNNING, (meta & 0b0001) == 1).withProperty(FACING, EnumFacing.getHorizontal((meta >>> 1) - 1));
+		return blockState.getBaseState().withProperty(FACING, EnumFacing.getHorizontal(meta));
+	}
+	
+	@Override
+	public IBlockState getActualState(IBlockState state, IBlockAccess world, BlockPos pos) {
+		TileEntity te = world.getTileEntity(pos);
+		return state.withProperty(RUNNING, te != null ? ((TileEntityHydraulicSeparator)te).isRunning() : false);
 	}
 }

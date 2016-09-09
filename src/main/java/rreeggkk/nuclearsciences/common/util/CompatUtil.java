@@ -62,9 +62,6 @@ public class CompatUtil {
 			TileEntity te = world.getTileEntity(pos.add(dir.getFrontOffsetX(), dir.getFrontOffsetY(), dir.getFrontOffsetZ()));
 			if (te != null && !te.isInvalid() && te.hasCapability(CapabilityUtil.CAPABILITY_CONSUMER, dir.getOpposite())) {
 				ITeslaConsumer cons = te.getCapability(CapabilityUtil.CAPABILITY_CONSUMER, dir.getOpposite());
-				if (cons == null) {
-					continue; //Why did this happen? This should not happen. The point of this is just to stop a crash for now
-				}
 				long power = cons.givePower(energy.getStoredPower(), true);
 				if (power > 0) {
 					totalPower += power;
@@ -74,7 +71,7 @@ public class CompatUtil {
 		}
 		long originalPower = energy.getStoredPower();
 		for (Entry<ITeslaConsumer, Long> e : facing.entrySet()) {
-			long power = energy.takePower(e.getValue()/totalPower*originalPower, true);
+			long power = energy.takePower(e.getValue()*originalPower/totalPower, true);
 			energy.takePower(e.getKey().givePower(power, false), false);
 		}
 	}

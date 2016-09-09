@@ -14,6 +14,8 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -22,7 +24,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 import rreeggkk.nuclearsciences.NuclearSciences;
-import rreeggkk.nuclearsciences.common.block.BlockChemicalSeparator;
 import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
@@ -41,6 +42,8 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	private int currentEnergy;
 	private ItemStack output;
 	private int energyNeeded;
+
+	private boolean running;
 
 	public TileEntityChemicalSeparator() {
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
@@ -66,12 +69,14 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 						output = outputs[1];
 						inventory[0] = outputs[0];
-						if (!worldObj.getBlockState(pos).getValue(BlockChemicalSeparator.RUNNING)){
-							worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockChemicalSeparator.RUNNING, true), 2);
+						if (!running){
+							running = true;
+							worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 						}
 					}
-				} else if (worldObj.getBlockState(pos).getValue(BlockChemicalSeparator.RUNNING)){
-					worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockChemicalSeparator.RUNNING, false), 2);
+				} else if (running) {
+					running = false;
+					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 				}
 			}
 			if (output != null) {
@@ -94,8 +99,9 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
 						inventory[1].stackSize += output.stackSize;
 						output = null;
-					} else if (worldObj.getBlockState(pos).getValue(BlockChemicalSeparator.RUNNING)){
-						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockChemicalSeparator.RUNNING, false), 2);
+					} else if (running) {
+						running = false;
+						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 					}
 				}
 			}
@@ -325,5 +331,24 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	@Override
 	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
 		return oldState.getBlock() != newState.getBlock();
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	@Override
+	public SPacketUpdateTileEntity getUpdatePacket() {
+		NBTTagCompound nbt = new NBTTagCompound();
+		System.out.println("updatePacket");
+		nbt.setBoolean("Running", running);
+		return new SPacketUpdateTileEntity(getPos(), 0, nbt);
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		NBTTagCompound nbt = pkt.getNbtCompound();
+		running = nbt.getBoolean("Running");
+		worldObj.markBlockRangeForRenderUpdate(pos, pos);
 	}
 }

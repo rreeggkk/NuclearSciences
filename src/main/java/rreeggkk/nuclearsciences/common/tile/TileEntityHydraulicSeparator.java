@@ -7,6 +7,8 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -15,7 +17,6 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants.NBT;
 import net.minecraftforge.fluids.FluidRegistry;
-import rreeggkk.nuclearsciences.common.block.BlockHydraulicSeparator;
 import rreeggkk.nuclearsciences.common.crafting.hydraulic.HydraulicSeparatorCraftingHandler;
 import rreeggkk.nuclearsciences.common.crafting.hydraulic.IHydraulicRecipe;
 import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
@@ -35,6 +36,8 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	private ItemStack output;
 	private int energyNeeded;
 	private int waterNeeded;
+
+	private boolean running;
 
 	public TileEntityHydraulicSeparator() {
 		tank = new SingleFluidTank(FluidRegistry.WATER, 8000);
@@ -59,12 +62,14 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 						if (inventory[0].stackSize == 0) {
 							inventory[0] = null;
 						}
-						if (!worldObj.getBlockState(pos).getValue(BlockHydraulicSeparator.RUNNING)){
-							worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, true), 2);
+						if (!running) {
+							running = true;
+							worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 						}
 					}
-				} else if (worldObj.getBlockState(pos).getValue(BlockHydraulicSeparator.RUNNING)){
-					worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+				} else if (running) {
+					running = false;
+					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 				}
 			}
 			if (output != null) {
@@ -96,8 +101,9 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
 						inventory[1].stackSize += output.stackSize;
 						output = null;
-					} else if (worldObj.getBlockState(pos).getValue(BlockHydraulicSeparator.RUNNING)){
-						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockHydraulicSeparator.RUNNING, false), 2);
+					} else if (running) {
+						running = false;
+						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
 					}
 				}
 			}
@@ -141,10 +147,10 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
 		tank.readFromNBT(compound.getCompoundTag("Fluid"));
-		
+
 		if (compound.hasKey("Processing")) {
 			output = ItemStack.loadItemStackFromNBT(compound.getCompoundTag("POutput"));
-			
+
 			currentEnergy = compound.getInteger("PEnergy");
 			currentWater = compound.getInteger("PWater");
 			energyNeeded = compound.getInteger("NEnergy");
@@ -170,20 +176,20 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 		compound.setTag("Items", nbttaglist);
 		compound.setTag("Energy", energy.serializeNBT());
 		compound.setTag("Fluid", tank.writeToNBT(new NBTTagCompound()));
-		
+
 		if (output != null) {
 			compound.setBoolean("Processing", true);
-			
+
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
 			output.writeToNBT(nbttagcompound);
 			compound.setTag("POutput", output.serializeNBT());
-			
+
 			compound.setInteger("PEnergy", currentEnergy);
 			compound.setInteger("PWater", currentWater);
 			compound.setInteger("NEnergy", energyNeeded);
 			compound.setInteger("NWater", waterNeeded);
 		}
-		
+
 		return compound;
 	}
 	@Override
@@ -300,9 +306,28 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	public IntEnergyContainer getEnergy() {
 		return energy;
 	}
-	
+
 	@Override
 	public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
 		return oldState.getBlock() != newState.getBlock();
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	@Override
+	public SPacketUpdateTileEntity getUpdatePacket() {
+		NBTTagCompound nbt = new NBTTagCompound();
+		System.out.println("updatePacket");
+		nbt.setBoolean("Running", running);
+		return new SPacketUpdateTileEntity(getPos(), 0, nbt);
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		NBTTagCompound nbt = pkt.getNbtCompound();
+		running = nbt.getBoolean("Running");
+		worldObj.markBlockRangeForRenderUpdate(pos, pos);
 	}
 }

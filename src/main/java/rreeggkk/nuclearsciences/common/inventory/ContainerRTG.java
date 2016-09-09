@@ -16,7 +16,7 @@ import rreeggkk.nuclearsciences.common.tile.TileEntityRTG;
 public class ContainerRTG extends Container {
 	public TileEntityRTG tile;
 	
-	private int lastEnergy;
+	private int lastEnergy=-1;
 
 	public ContainerRTG(InventoryPlayer player,
 			TileEntityRTG tilee) {

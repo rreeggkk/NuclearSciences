@@ -112,6 +112,26 @@ public class IntEnergyContainer extends AEnergyContainer {
 	}
 	
 	@Override
+	public int extractEnergy(int power, boolean simulated) {
+		int removed = Math.min(this.stored, Math.min(outputRate, power));
+
+		if (!simulated)
+			this.stored -= removed;
+
+		return removed;
+	}
+	
+	@Override
+	public int receiveEnergy(int power, boolean simulated) {
+		int accepted = Math.min(this.getIntCapacity() - this.stored, Math.min(inputRate, power));
+
+		if (!simulated)
+			this.stored += accepted;
+
+		return accepted;
+	}
+	
+	@Override
 	public double getFraction() {
 		return (double)stored/capacity;
 	}
@@ -181,5 +201,25 @@ public class IntEnergyContainer extends AEnergyContainer {
 	
 	public int getIntCapacity() {
 		return capacity;
+	}
+
+	@Override
+	public int getEnergyStored() {
+		return stored;
+	}
+
+	@Override
+	public int getMaxEnergyStored() {
+		return capacity;
+	}
+
+	@Override
+	public boolean canExtract() {
+		return outputRate>0&&stored>0;
+	}
+
+	@Override
+	public boolean canReceive() {
+		return inputRate>0&&capacity-stored>0;
 	}
 }

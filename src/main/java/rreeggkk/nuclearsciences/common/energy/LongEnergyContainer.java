@@ -110,6 +110,26 @@ public class LongEnergyContainer extends AEnergyContainer {
 
 		return accepted;
 	}
+	
+	@Override
+	public int extractEnergy(int power, boolean simulated) {
+		int removed = Math.min(this.getEnergyStored(), Math.min((int) Math.min(outputRate, Integer.MAX_VALUE), power));
+
+		if (!simulated)
+			this.stored -= removed;
+
+		return removed;
+	}
+	
+	@Override
+	public int receiveEnergy(int power, boolean simulated) {
+		int accepted = Math.min((int) Math.min(this.getCapacity() - this.stored, Integer.MAX_VALUE), Math.min((int) Math.min(inputRate, Integer.MAX_VALUE), power));
+
+		if (!simulated)
+			this.stored += accepted;
+
+		return accepted;
+	}
 
 	/**
 	 * @return the stored
@@ -162,5 +182,25 @@ public class LongEnergyContainer extends AEnergyContainer {
 	
 	public double getFraction() {
 		return (double)stored/capacity;
+	}
+
+	@Override
+	public int getEnergyStored() {
+		return (int) Math.min(stored, Integer.MAX_VALUE);
+	}
+
+	@Override
+	public int getMaxEnergyStored() {
+		return (int) Math.min(capacity, Integer.MAX_VALUE);
+	}
+
+	@Override
+	public boolean canExtract() {
+		return outputRate>0&&stored>0;
+	}
+
+	@Override
+	public boolean canReceive() {
+		return inputRate>0&&capacity-stored>0;
 	}
 }

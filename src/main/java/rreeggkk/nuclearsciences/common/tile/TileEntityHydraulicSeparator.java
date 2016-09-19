@@ -285,7 +285,7 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 
 	@Override
 	public boolean hasCapability(Capability<?> c, EnumFacing facing) {
-		if (c == CapabilityUtil.CAPABILITY_CONSUMER || c == CapabilityUtil.FLUID_HANDLER) {
+		if (c == CapabilityUtil.TESLA_CONSUMER || c == CapabilityUtil.FLUID_HANDLER) {
 			return true;
 		}
 		return super.hasCapability(c, facing);
@@ -294,7 +294,7 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getCapability(Capability<T> c, EnumFacing facing) {
-		if (c == CapabilityUtil.CAPABILITY_CONSUMER) {
+		if (c == CapabilityUtil.TESLA_CONSUMER) {
 			return (T) energy;
 		}
 		if (c == CapabilityUtil.FLUID_HANDLER) {

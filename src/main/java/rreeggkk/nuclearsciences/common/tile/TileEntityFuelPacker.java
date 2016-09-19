@@ -345,7 +345,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 	@Override
 	public boolean hasCapability(Capability<?> c, EnumFacing facing) {
-		if (c == CapabilityUtil.CAPABILITY_CONSUMER) {
+		if (c == CapabilityUtil.TESLA_CONSUMER) {
 			return true;
 		}
 		return super.hasCapability(c, facing);
@@ -354,7 +354,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getCapability(Capability<T> c, EnumFacing facing) {
-		if (c == CapabilityUtil.CAPABILITY_CONSUMER) {
+		if (c == CapabilityUtil.TESLA_CONSUMER) {
 			return (T) energy;
 		}
 		return super.getCapability(c, facing);

@@ -255,7 +255,7 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 
 	@Override
 	public boolean hasCapability(Capability<?> cap, EnumFacing facing) {
-		if (cap == CapabilityUtil.CAPABILITY_PRODUCER) {
+		if (cap == CapabilityUtil.TESLA_PRODUCER) {
 			return true;
 		}
 		return super.hasCapability(cap, facing);
@@ -264,7 +264,7 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getCapability(Capability<T> cap, EnumFacing facing) {
-		if (cap == CapabilityUtil.CAPABILITY_PRODUCER) {
+		if (cap == CapabilityUtil.TESLA_PRODUCER) {
 			return (T) energy;
 		}
 		return super.getCapability(cap, facing);

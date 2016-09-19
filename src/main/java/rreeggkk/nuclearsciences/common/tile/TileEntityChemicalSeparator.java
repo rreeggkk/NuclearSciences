@@ -309,7 +309,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	@Override
 	public boolean hasCapability(Capability<?> c, EnumFacing facing) {
-		if (c == CapabilityUtil.CAPABILITY_CONSUMER) {
+		if (c == CapabilityUtil.TESLA_CONSUMER) {
 			return true;
 		}
 		return super.hasCapability(c, facing);
@@ -318,7 +318,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getCapability(Capability<T> c, EnumFacing facing) {
-		if (c == CapabilityUtil.CAPABILITY_CONSUMER) {
+		if (c == CapabilityUtil.TESLA_CONSUMER) {
 			return (T) energy;
 		}
 		return super.getCapability(c, facing);

@@ -6,8 +6,8 @@ import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.nuclear.decay.IDecayMode;
 
 public class Isotope<T extends IElement<T>> extends AIsotope<T, Isotope<T>> {
-	public Isotope(int neutronNumber) {
-		super(neutronNumber);
+	public Isotope(int neutronNumber, double thermalCapture, double thermalFisison) {
+		super(neutronNumber, thermalCapture, thermalFisison);
 	}
 
 	/**

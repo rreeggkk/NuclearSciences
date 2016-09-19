@@ -9,8 +9,8 @@ public class MetastableIsotope<T extends IElement<T>> extends AIsotope<T, Metast
 	
 	private String metaStr;
 
-	public MetastableIsotope(int neutronNumber, int metastableNumber) {
-		super(neutronNumber);
+	public MetastableIsotope(int neutronNumber, int metastableNumber, double thermalCapture, double thermalFisison) {
+		super(neutronNumber, thermalCapture, thermalFisison);
 		this.metaStr = "m" + (metastableNumber > 0 ? metastableNumber : "");
 	}
 

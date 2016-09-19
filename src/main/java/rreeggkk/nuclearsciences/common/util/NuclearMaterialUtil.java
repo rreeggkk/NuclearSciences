@@ -73,4 +73,15 @@ public class NuclearMaterialUtil {
 		
 		return newMap.values().stream().allMatch((v)->v.compareTo(epsilon)<=0);
 	}
+	
+	public static double getCaptureCrossSection(AIsotope<?,?> iso, int energy) {
+		double fast = Math.min(iso.getThermalCapture()/36, 0.08);
+		double k = (Math.sqrt(iso.getThermalCapture()/fast) - 1)/energy;
+		
+		return iso.getThermalCapture()/((k*energy + 1)*(k*energy + 1));
+	}
+	
+	public static double getFissionCrossSection(AIsotope<?,?> iso, int energy) {
+		return Math.pow(iso.getThermalFission(), 1/(2*energy));
+	}
 }

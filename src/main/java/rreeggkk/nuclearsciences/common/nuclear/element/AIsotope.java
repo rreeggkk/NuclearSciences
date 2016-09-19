@@ -13,9 +13,12 @@ public class AIsotope<T extends IElement<T>, U extends AIsotope<T,U>> {
 	private String suffix;
 	private T element;
 	private IDecayMode<U> decayMode;
+	private double thermalCapture, thermalFission;
 
-	public AIsotope(int neutronNumber) {
+	public AIsotope(int neutronNumber, double thermalCapture, double thermalFisison) {
 		this.neutronNumber = neutronNumber;
+		this.thermalCapture = thermalCapture;
+		this.thermalFission = thermalFisison;
 	}
 
 	/**
@@ -107,5 +110,13 @@ public class AIsotope<T extends IElement<T>, U extends AIsotope<T,U>> {
 	@Override
 	public String toString() {
 		return getFullName();
+	}
+	
+	public double getThermalCapture() {
+		return thermalCapture;
+	}
+	
+	public double getThermalFission() {
+		return thermalFission;
 	}
 }

@@ -50,7 +50,7 @@ public class TileEntityRTG extends TileEntityNSInventory implements ITickable {
 			}
 		
 			Apfloat deltaHeat = new Apfloat(0, Constants.PRECISION);
-			Apfloat heatCapacity = new Apfloat(100, Constants.PRECISION);
+			Apfloat heatCapacity = new Apfloat(500, Constants.PRECISION);
 			
 			if (!inventory[0].isEmpty() && inventory[0].getCount()>0 && inventory[0].getItem() == ModItems.nuclearMaterial) {
 				HashMap<String, Apfloat> molarContents = ModItems.nuclearMaterial.getContents(inventory[0]);

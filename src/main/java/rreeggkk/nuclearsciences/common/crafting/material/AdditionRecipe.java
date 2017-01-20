@@ -8,6 +8,7 @@ import org.apfloat.Apfloat;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.item.ModItems;
@@ -20,7 +21,7 @@ public class AdditionRecipe implements IRecipe {
 
 		for (int i = 0; i<inv.getSizeInventory(); i++) {
 			ItemStack stack = inv.getStackInSlot(i);
-			if (stack == null) continue;
+			if (stack.isEmpty()) continue;
 
 			if (stack.getItem() == ModItems.nuclearMaterial) {
 				nums++;
@@ -37,7 +38,7 @@ public class AdditionRecipe implements IRecipe {
 
 		for (int i = 0; i<inv.getSizeInventory(); i++) {
 			ItemStack stack = inv.getStackInSlot(i);
-			if (stack == null) continue;
+			if (stack.isEmpty()) continue;
 
 			if (stack.getItem() == ModItems.nuclearMaterial) {
 				HashMap<String, Apfloat> newMap = ModItems.nuclearMaterial.getContents(stack);
@@ -45,7 +46,7 @@ public class AdditionRecipe implements IRecipe {
 					contents.put(o.getKey(), contents.getOrDefault(o.getKey(), new Apfloat(0).precision(Constants.PRECISION)).add(o.getValue().precision(Constants.PRECISION)).precision(Constants.PRECISION));
 				}
 			} else {
-				return null;
+				return ItemStack.EMPTY;
 			}
 		}
 
@@ -65,12 +66,7 @@ public class AdditionRecipe implements IRecipe {
 	}
 
 	@Override
-	public ItemStack[] getRemainingItems(InventoryCrafting inv) {
-        ItemStack[] ret = new ItemStack[inv.getSizeInventory()];
-        for (int i = 0; i < ret.length; i++)
-        {
-            ret[i] = null;
-        }
-        return ret;
+	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+		return NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
 	}
 }

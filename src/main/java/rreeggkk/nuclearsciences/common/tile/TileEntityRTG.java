@@ -6,15 +6,11 @@ import org.apfloat.Apfloat;
 import org.apfloat.Apint;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraftforge.common.capabilities.Capability;
@@ -29,11 +25,10 @@ import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.CompatUtil;
 import rreeggkk.nuclearsciences.common.util.TemperatureUtil;
 
-public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
+public class TileEntityRTG extends TileEntityNSInventory implements ITickable {
 	
 	public static final Apfloat maxTemperature = new Apfloat(1273.15);
 
-	private ItemStack[] inventory;
 	private IntEnergyContainer energy;
 	private Apfloat partialEnergy = new Apfloat(0, Constants.PRECISION);
 	private Apfloat lastEnergyPerTick = new Apfloat(0, Constants.PRECISION);
@@ -46,20 +41,18 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 
 	@Override
 	public void update() {
-
-		if (!worldObj.isRemote) {
-			
+		if (!world.isRemote) {
 			if (temperature.compareTo(maxTemperature)>0) {
 				IBlockState newBlock = CompatUtil.getMoltenRTGFluidBlock();
-				worldObj.setBlockState(getPos(), newBlock, 3);
-				worldObj.notifyBlockOfStateChange(getPos(), newBlock.getBlock());
+				world.setBlockState(getPos(), newBlock, 3);
+				world.notifyNeighborsOfStateChange(getPos(), newBlock.getBlock(), true);
 				return;
 			}
 		
 			Apfloat deltaHeat = new Apfloat(0, Constants.PRECISION);
 			Apfloat heatCapacity = new Apfloat(100, Constants.PRECISION);
 			
-			if (inventory[0] != null && inventory[0].stackSize>0 && inventory[0].getItem() == ModItems.nuclearMaterial) {
+			if (!inventory[0].isEmpty() && inventory[0].getCount()>0 && inventory[0].getItem() == ModItems.nuclearMaterial) {
 				HashMap<String, Apfloat> molarContents = ModItems.nuclearMaterial.getContents(inventory[0]);
 				deltaHeat = DecaySimulation.simulateDecay(molarContents).precision(Constants.PRECISION);
 				ModItems.nuclearMaterial.setContents(inventory[0], molarContents);
@@ -77,12 +70,12 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 			
 			energy.givePower(intEnergy.longValue(), false);
 			
-			CompatUtil.tryPushEnergyFrom(worldObj, pos, energy);
+			CompatUtil.tryPushEnergyFrom(world, pos, energy);
 			
 			temperature = temperature.add(deltaHeat.divide(heatCapacity));
 		}
 
-		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 2);
 		markDirty();
 	}
 
@@ -98,7 +91,7 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 
 			if (j >= 0 && j < this.inventory.length)
 			{
-				this.inventory[j] = ItemStack.loadItemStackFromNBT(nbttagcompound);
+				this.inventory[j] = new ItemStack(nbttagcompound);
 			}
 		}
 
@@ -143,33 +136,6 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 	}
 
 	@Override
-	public boolean hasCustomName() {
-		return false;
-	}
-
-	@Override
-	public int getSizeInventory() {
-		return inventory.length;
-	}
-
-	@Override
-	public ItemStack getStackInSlot(int index) {
-		return inventory[index];
-	}
-
-	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		return ItemStackHelper.getAndSplit(inventory, index, count);
-	}
-
-	@Override
-	public ItemStack removeStackFromSlot(int index) {
-		ItemStack temp = inventory[index];
-		inventory[index] = null;
-		return temp;
-	}
-
-	@Override
 	public void setInventorySlotContents(int index, ItemStack stack) {
 		this.inventory[index] = stack;
 	}
@@ -178,17 +144,6 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 	public int getInventoryStackLimit() {
 		return 1;
 	}
-
-	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
-	}
-
-	@Override
-	public void openInventory(EntityPlayer player) {}
-
-	@Override
-	public void closeInventory(EntityPlayer player) {}
 
 	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
@@ -232,25 +187,6 @@ public class TileEntityRTG extends TileEntity implements ITickable, IInventory {
 	
 	public Apfloat getThermalConductivity() {
 		return new Apfloat(0.2, Constants.PRECISION);
-	}
-
-	@Override
-	public int getField(int id) {
-		return 0;
-	}
-
-	@Override
-	public void setField(int id, int value) {
-	}
-
-	@Override
-	public int getFieldCount() {
-		return 0;
-	}
-
-	@Override
-	public void clear() {
-		inventory = new ItemStack[inventory.length];
 	}
 
 	@Override

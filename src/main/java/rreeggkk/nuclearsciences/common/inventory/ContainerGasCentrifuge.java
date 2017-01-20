@@ -185,7 +185,7 @@ public class ContainerGasCentrifuge extends Container {
 	 */
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotNum) {
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	public TileEntityVaporizer getTile() {

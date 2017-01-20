@@ -28,19 +28,19 @@ public class GiveNuclearMaterialCommand extends CommandBase {
 	public GiveNuclearMaterialCommand() {
 		aliases = Arrays.asList(new String[] {"gnm"});
 	}
-
+	
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "givenuclear";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "gnm [<Material Name> <Grams of Material>] ...";
 	}
 
 	@Override
-	public List<String> getCommandAliases() {
+	public List<String> getAliases() {
 		return aliases;
 	}
 
@@ -56,7 +56,7 @@ public class GiveNuclearMaterialCommand extends CommandBase {
 					try {
 						ModItems.nuclearMaterial.addIsotopeMass(stack, iso.getFullName(), new Apfloat(args[1], Constants.PRECISION));
 					} catch (NumberFormatException e) {
-						sender.addChatMessage(new TextComponentString("Error: Expected number"));
+						sender.sendMessage(new TextComponentString("Error: Expected number"));
 						return;
 					}
 				}
@@ -65,24 +65,23 @@ public class GiveNuclearMaterialCommand extends CommandBase {
 					try {
 						ModItems.nuclearMaterial.addIsotopeMass(stack, args[2*i], new Apfloat(args[2*i+1], Constants.PRECISION));
 					} catch (NumberFormatException e) {
-						sender.addChatMessage(new TextComponentString("Error: Expected number"));
+						sender.sendMessage(new TextComponentString("Error: Expected number"));
 						return;
 					}
 				}
 			}
 
 			if (!player.inventory.addItemStackToInventory(stack)) {
-				EntityItem entityitem = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, stack);
-				player.worldObj.spawnEntityInWorld(entityitem);
+				EntityItem entityitem = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack);
+				player.world.spawnEntity(entityitem);
 			}
 		} else {
-			sender.addChatMessage(new TextComponentString("You must be a player to use this command."));
+			sender.sendMessage(new TextComponentString("You must be a player to use this command."));
 		}
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
-		System.out.println(Arrays.toString(args));
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos) {
 		if (args.length == 0 || args.length % 2 == 1) {
 			return new ArrayList<String>(IsotopeRegistry.getRegistry().keySet());
 		} else {

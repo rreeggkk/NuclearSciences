@@ -102,7 +102,7 @@ public class ItemNuclearFuel extends ItemMultiNSBase {
 	}
 
 	public ItemStack setContents(ItemStack stack, HashMap<String, Apfloat> data) {
-		if (stack.getItem() != this) return null;
+		if (stack.getItem() != this) return ItemStack.EMPTY;
 
 		NBTTagCompound compound = stack.getTagCompound();
 		if (compound == null) {

@@ -8,15 +8,12 @@ import java.util.stream.Collectors;
 import org.apfloat.Apfloat;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
@@ -33,11 +30,9 @@ import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.ItemStackUtil;
 import rreeggkk.nuclearsciences.common.util.RandomUtil;
 
-public class TileEntityChemicalSeparator extends TileEntity implements ISidedInventory, ITickable {
+public class TileEntityChemicalSeparator extends TileEntityNSInventory implements ISidedInventory, ITickable {
 
 	private IntEnergyContainer energy;
-
-	private ItemStack[] inventory = new ItemStack[2];
 
 	private int currentEnergy;
 	private ItemStack output;
@@ -47,20 +42,21 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 	public TileEntityChemicalSeparator() {
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
+		inventory = new ItemStack[2];
 	}
 
 	@Override
 	public void update() {
-		if (!worldObj.isRemote) {
-			if (output == null) {
-				if (inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial) {
+		if (!world.isRemote) {
+			if (output.isEmpty()) {
+				if (!inventory[0].isEmpty() && inventory[0].getItem() == ModItems.nuclearMaterial) {
 					int numElements = getNumElements(inventory[0]);
 					if (numElements<=1) {
 						energyNeeded = 0;
 						currentEnergy = 0;
 						output = inventory[0].splitStack(1);
-						if (inventory[0].stackSize == 0) {
-							inventory[0] = null;
+						if (inventory[0].getCount() == 0) {
+							inventory[0] = ItemStack.EMPTY;
 						}
 					} else if (numElements > 1) {
 						energyNeeded = NuclearSciences.instance.config.chemicalSeparatorEnergyPerOperation;
@@ -71,15 +67,15 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 						inventory[0] = outputs[0];
 						if (!running){
 							running = true;
-							worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+							world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 						}
 					}
 				} else if (running) {
 					running = false;
-					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+					world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 				}
 			}
-			if (output != null) {
+			if (!output.isEmpty()) {
 				if (currentEnergy < energyNeeded) {
 					int desiredEn = (int) Math.round(getMaxRunFraction() * getMaxEnergyPerTick());
 					if (desiredEn > energy.getStored()) {
@@ -93,15 +89,15 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 				}
 
 				if (currentEnergy >= energyNeeded) {
-					if (inventory[1] == null || inventory[1].stackSize == 0) {
+					if (inventory[1].isEmpty() || inventory[1].getCount() == 0) {
 						inventory[1] = output.copy();
-						output = null;
+						output = ItemStack.EMPTY;
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
-						inventory[1].stackSize += output.stackSize;
-						output = null;
+						inventory[1].setCount(inventory[1].getCount() + output.getCount());
+						output = ItemStack.EMPTY;
 					} else if (running) {
 						running = false;
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+						world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 					}
 				}
 			}
@@ -109,7 +105,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	}
 
 	public int getFixedCompletion(int point) {
-		if (output == null) {
+		if (output.isEmpty()) {
 			return 0;
 		}
 		return (int) ((double)currentEnergy/energyNeeded * Math.pow(10, point));
@@ -170,18 +166,20 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 			int j = nbttagcompound.getByte("Slot");
 
 			if (j >= 0 && j < this.inventory.length)
-			{
-				this.inventory[j] = ItemStack.loadItemStackFromNBT(nbttagcompound);
+			{	
+				this.inventory[j] = new ItemStack(nbttagcompound);
 			}
 		}
 
 		energy.deserializeNBT(compound.getCompoundTag("Energy"));
 
 		if (compound.hasKey("Processing")) {
-			output = ItemStack.loadItemStackFromNBT(compound.getCompoundTag("POutput"));
+			output = new ItemStack(compound.getCompoundTag("POutput"));
 
 			currentEnergy = compound.getInteger("PEnergy");
 			energyNeeded = compound.getInteger("NEnergy");
+		} else {
+			output = ItemStack.EMPTY;
 		}
 	}
 
@@ -203,7 +201,7 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 		compound.setTag("Items", nbttaglist);
 		compound.setTag("Energy", energy.serializeNBT());
 
-		if (output != null) {
+		if (!output.isEmpty()) {
 			compound.setBoolean("Processing", true);
 
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
@@ -216,32 +214,6 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 
 		return compound;
 	}
-	@Override
-	public int getSizeInventory() {
-		return inventory.length;
-	}
-
-	@Override
-	public ItemStack getStackInSlot(int index) {
-		return inventory[index];
-	}
-
-	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		return ItemStackHelper.getAndSplit(inventory, index, count);
-	}
-
-	@Override
-	public ItemStack removeStackFromSlot(int index) {
-		ItemStack temp = inventory[index];
-		inventory[index] = null;
-		return temp;
-	}
-
-	@Override
-	public void setInventorySlotContents(int index, ItemStack stack) {
-		inventory[index] = stack;
-	}
 
 	@Override
 	public int getInventoryStackLimit() {
@@ -249,47 +221,13 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
-	}
-
-	@Override
-	public void openInventory(EntityPlayer player) {}
-
-	@Override
-	public void closeInventory(EntityPlayer player) {}
-
-	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
 		return index == 0 && isValidInput(stack);
 	}
 
 	@Override
-	public int getField(int id) {
-		return 0;
-	}
-
-	@Override
-	public void setField(int id, int value) {}
-
-	@Override
-	public int getFieldCount() {
-		return 0;
-	}
-
-	@Override
-	public void clear() {
-		inventory = new ItemStack[inventory.length];
-	}
-
-	@Override
 	public String getName() {
 		return "container.nuclearsciences.chemicalseparator.name";
-	}
-
-	@Override
-	public boolean hasCustomName() {
-		return false;
 	}
 
 	@Override
@@ -349,6 +287,12 @@ public class TileEntityChemicalSeparator extends TileEntity implements ISidedInv
 	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
 		NBTTagCompound nbt = pkt.getNbtCompound();
 		running = nbt.getBoolean("Running");
-		worldObj.markBlockRangeForRenderUpdate(pos, pos);
+		world.markBlockRangeForRenderUpdate(pos, pos);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

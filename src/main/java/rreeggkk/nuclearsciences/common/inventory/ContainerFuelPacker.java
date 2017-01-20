@@ -83,7 +83,7 @@ public class ContainerFuelPacker extends Container {
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return tile.isUseableByPlayer(player);
+		return tile.isUsableByPlayer(player);
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class ContainerFuelPacker extends Container {
 	 */
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotNum) {
-		ItemStack itemstack = null;
+		ItemStack itemstack = ItemStack.EMPTY;
 		Slot slot = (Slot) inventorySlots.get(slotNum);
 
 		if (slot != null && slot.getHasStack()) {
@@ -113,7 +113,7 @@ public class ContainerFuelPacker extends Container {
 			itemstack = itemstack1.copy();
 			if (slotNum == 0) {
 				if (!mergeItemStack(itemstack1, 3, 39, true)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 
 				slot.onSlotChange(itemstack1, itemstack);
@@ -121,31 +121,31 @@ public class ContainerFuelPacker extends Container {
 					&& slotNum >= 3
 					&& slotNum < 39) {
 				if (!mergeItemStack(itemstack1, 0, 1, false)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			} else if (slotNum >= 3 && slotNum < 12) {
 				if (!mergeItemStack(itemstack1, 12, 39, false)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			} else if (slotNum >= 12 && slotNum < 39) {
 				if (!mergeItemStack(itemstack1, 3, 12, false)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			} else if (!mergeItemStack(itemstack1, 3, 39, false)) {
-				return null;
+				return ItemStack.EMPTY;
 			}
 
-			if (itemstack1.stackSize == 0) {
-				slot.putStack((ItemStack) null);
+			if (itemstack1.getCount() == 0) {
+				slot.putStack(ItemStack.EMPTY);
 			} else {
 				slot.onSlotChanged();
 			}
 
-			if (itemstack1.stackSize == itemstack.stackSize) {
-				return null;
+			if (itemstack1.getCount() == itemstack.getCount()) {
+				return ItemStack.EMPTY;
 			}
 
-			slot.onPickupFromSlot(player, itemstack1);
+			slot.onTake(player, itemstack1);
 		}
 
 		return itemstack;

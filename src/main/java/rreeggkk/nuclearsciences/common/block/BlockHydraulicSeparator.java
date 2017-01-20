@@ -9,7 +9,6 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -47,7 +46,7 @@ public class BlockHydraulicSeparator extends BlockContainerNSBase {
 	}
 
 	@Override
-	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, ItemStack heldItem, EnumFacing side,
+	public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side,
 			float hitX, float hitY, float hitZ) {
 
 		// Get the tile entity
@@ -58,7 +57,7 @@ public class BlockHydraulicSeparator extends BlockContainerNSBase {
 			return false;
 		}
 		
-		if (FluidUtil.interactWithFluidHandler(heldItem, tileEntity.getCapability(CapabilityUtil.FLUID_HANDLER, side), player)){
+		if (FluidUtil.interactWithFluidHandler(player.getHeldItem(hand), tileEntity.getCapability(CapabilityUtil.FLUID_HANDLER, side), player).success){
 			return true;
 		}
 

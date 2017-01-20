@@ -12,7 +12,7 @@ public class TileEntityCentrifuge extends TileEntity implements IGasCentrifugeTi
 
 	public void setMaster(TileEntityVaporizer master) {
 		this.master = master;
-		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 2);
 		markDirty();
 	}
 
@@ -45,7 +45,7 @@ public class TileEntityCentrifuge extends TileEntity implements IGasCentrifugeTi
 		NBTTagCompound compound = pkt.getNbtCompound();
 		System.out.println(compound);
 		if (compound.hasKey("dX")) {
-			master = (TileEntityVaporizer) worldObj.getTileEntity(new BlockPos(compound.getInteger("dX"),compound.getInteger("dY"),compound.getInteger("dZ")).add(getPos()));
+			master = (TileEntityVaporizer) world.getTileEntity(new BlockPos(compound.getInteger("dX"),compound.getInteger("dY"),compound.getInteger("dZ")).add(getPos()));
 		}
 	}
 	

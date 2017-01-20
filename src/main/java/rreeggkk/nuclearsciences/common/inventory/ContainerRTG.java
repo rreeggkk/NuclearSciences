@@ -72,7 +72,7 @@ public class ContainerRTG extends Container {
 
 	@Override
 	public boolean canInteractWith(EntityPlayer player) {
-		return tile.isUseableByPlayer(player);
+		return tile.isUsableByPlayer(player);
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class ContainerRTG extends Container {
 	 */
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int slotNum) {
-		ItemStack itemstack = null;
+		ItemStack itemstack = ItemStack.EMPTY;
 		Slot slot = (Slot) inventorySlots.get(slotNum);
 
 		if (slot != null && slot.getHasStack()) {
@@ -97,7 +97,7 @@ public class ContainerRTG extends Container {
 			itemstack = itemstack1.copy();
 			if (slotNum == 0) {
 				if (!mergeItemStack(itemstack1, 2, 38, true)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 
 				slot.onSlotChange(itemstack1, itemstack);
@@ -106,41 +106,41 @@ public class ContainerRTG extends Container {
 					&& slotNum < 38) {
 				
 				if (!mergeItemStack(itemstack1, 0, 1, false)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			} else if (itemstack1.getItem() instanceof RTGUpgrade
 					&& slotNum >= 2
 					&& slotNum < 38) {
 				if (!inventorySlots.get(1).getHasStack()) {
 					((Slot)inventorySlots.get(1)).putStack(inventorySlots.get(slotNum).getStack().splitStack(1));
-					if (inventorySlots.get(slotNum).getStack().stackSize == 0) {
-						((Slot)inventorySlots.get(slotNum)).putStack(null);
+					if (inventorySlots.get(slotNum).getStack().getCount() == 0) {
+						((Slot)inventorySlots.get(slotNum)).putStack(ItemStack.EMPTY);
 					}
-					return null;
+					return ItemStack.EMPTY;
 				}
 			} else if (slotNum >= 2 && slotNum < 11) {
 				if (!mergeItemStack(itemstack1, 11, 38, false)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			} else if (slotNum >= 11 && slotNum < 38) {
 				if (!mergeItemStack(itemstack1, 2, 11, false)) {
-					return null;
+					return ItemStack.EMPTY;
 				}
 			} else if (!mergeItemStack(itemstack1, 2, 38, false)) {
-				return null;
+				return ItemStack.EMPTY;
 			}
 
-			if (itemstack1.stackSize == 0) {
-				slot.putStack((ItemStack) null);
+			if (itemstack1.getCount() == 0) {
+				slot.putStack(ItemStack.EMPTY);
 			} else {
 				slot.onSlotChanged();
 			}
 
-			if (itemstack1.stackSize == itemstack.stackSize) {
-				return null;
+			if (itemstack1.getCount() == itemstack.getCount()) {
+				return ItemStack.EMPTY;
 			}
 
-			slot.onPickupFromSlot(player, itemstack1);
+			slot.onTake(player, itemstack1);
 		}
 
 		return itemstack;

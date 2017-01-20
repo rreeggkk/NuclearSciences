@@ -19,7 +19,7 @@ public class OreHydraulicRecipe implements IHydraulicRecipe {
 		if (!ores.isEmpty()) {
 			this.output = ores.get(0);
 		} else {
-			this.output = null;
+			this.output = ItemStack.EMPTY;
 		}
 		this.energy = energy;
 		inputNum = 1;
@@ -35,9 +35,9 @@ public class OreHydraulicRecipe implements IHydraulicRecipe {
 		if (!ores.isEmpty()) {
 			this.output = ores.get(0);
 		} else {
-			this.output = null;
+			this.output = ItemStack.EMPTY;
 		}
-		this.output.stackSize = outputNum;
+		this.output.setCount(outputNum);
 		this.energy = energy;
 		inputNum = 1;
 		this.water = water;
@@ -52,9 +52,9 @@ public class OreHydraulicRecipe implements IHydraulicRecipe {
 		if (!ores.isEmpty()) {
 			this.output = ores.get(0);
 		} else {
-			this.output = null;
+			this.output = ItemStack.EMPTY;
 		}
-		this.output.stackSize = outputNum;
+		this.output.setCount(outputNum);
 		this.energy = energy;
 		this.water = water;
 	}
@@ -71,7 +71,7 @@ public class OreHydraulicRecipe implements IHydraulicRecipe {
 	public OreHydraulicRecipe(ItemStack input, ItemStack output, int energy,
 			int water) {
 		this.input = OreDictionary.getOreIDs(input)[0];
-		inputNum = input.stackSize;
+		inputNum = input.getCount();
 		this.output = output;
 		this.energy = energy;
 		this.water = water;

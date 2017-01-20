@@ -8,6 +8,7 @@ import org.apfloat.Apfloat;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.item.ModItems;
@@ -20,7 +21,7 @@ public class HalvingRecipe implements IRecipe {
 
 		for (int i = 0; i<inv.getSizeInventory(); i++) {
 			ItemStack stack = inv.getStackInSlot(i);
-			if (stack == null) continue;
+			if (stack.isEmpty()) continue;
 
 			if (stack.getItem() == ModItems.nuclearMaterial) {
 				nums++;
@@ -37,7 +38,7 @@ public class HalvingRecipe implements IRecipe {
 
 		for (int i = 0; i<inv.getSizeInventory(); i++) {
 			ItemStack stack = inv.getStackInSlot(i);
-			if (stack == null) continue;
+			if (stack.isEmpty()) continue;
 
 			if (contents == null && stack.getItem() == ModItems.nuclearMaterial) {
 				contents = ModItems.nuclearMaterial.getContents(stack);
@@ -45,7 +46,7 @@ public class HalvingRecipe implements IRecipe {
 					contents.put(e.getKey(), e.getValue().divide(new Apfloat(2, Constants.PRECISION)).precision(Constants.PRECISION));
 				}
 			} else {
-				return null;
+				return ItemStack.EMPTY;
 			}
 		}
 
@@ -65,9 +66,9 @@ public class HalvingRecipe implements IRecipe {
 	}
 
 	@Override
-	public ItemStack[] getRemainingItems(InventoryCrafting inv) {
-		ItemStack[] ret = new ItemStack[inv.getSizeInventory()];
-		for (int i = 0; i < ret.length; i++){
+	public NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
+		NonNullList<ItemStack> ret = NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
+		for (int i = 0; i < ret.size(); i++){
 			if (inv.getStackInSlot(i) != null && inv.getStackInSlot(i).getItem() == ModItems.nuclearMaterial) {
 				HashMap<String, Apfloat> contents = ModItems.nuclearMaterial.getContents(inv.getStackInSlot(i));
 				
@@ -77,9 +78,7 @@ public class HalvingRecipe implements IRecipe {
 				
 				ItemStack stack = new ItemStack(ModItems.nuclearMaterial);
 				ModItems.nuclearMaterial.setContents(stack, contents);
-				ret[i] = stack;
-			} else {
-				ret[i] = null;
+				ret.set(i, stack);
 			}
 		}
 		return ret;

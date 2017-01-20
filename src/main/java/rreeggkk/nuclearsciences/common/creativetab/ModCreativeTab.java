@@ -1,7 +1,7 @@
 package rreeggkk.nuclearsciences.common.creativetab;
 
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 
 public class ModCreativeTab extends CreativeTabs {
@@ -11,7 +11,7 @@ public class ModCreativeTab extends CreativeTabs {
 	}
 
 	@Override
-	public Item getTabIconItem() {
-		return ModItems.nuclearMaterial;
+	public ItemStack getTabIconItem() {
+		return new ItemStack(ModItems.nuclearMaterial);
 	}
 }

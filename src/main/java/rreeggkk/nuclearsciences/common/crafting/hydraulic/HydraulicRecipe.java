@@ -37,6 +37,6 @@ public class HydraulicRecipe implements IHydraulicRecipe {
 
 	@Override
 	public int getInputAmount(ItemStack input) {
-		return this.input.stackSize;
+		return this.input.getCount();
 	}
 }

@@ -16,7 +16,7 @@ public class TileEntityCondensor extends TileEntity implements ISidedInventory, 
 	
 	public void setMaster(TileEntityVaporizer master) {
 		this.master = master;
-		worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 2);
 		markDirty();
 	}
 
@@ -67,7 +67,7 @@ public class TileEntityCondensor extends TileEntity implements ISidedInventory, 
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
+	public boolean isUsableByPlayer(EntityPlayer player) {
 		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
 	}
 
@@ -132,7 +132,7 @@ public class TileEntityCondensor extends TileEntity implements ISidedInventory, 
 	@Override
 	public boolean hasVaporizer() {
 		if (forceUpdate) {
-			worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+			world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 2);
 			markDirty();
 			forceUpdate = false;
 		}
@@ -158,7 +158,7 @@ public class TileEntityCondensor extends TileEntity implements ISidedInventory, 
 	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
 		NBTTagCompound compound = pkt.getNbtCompound();
 		if (compound.hasKey("dX")) {
-			master = (TileEntityVaporizer) worldObj.getTileEntity(new BlockPos(compound.getInteger("dX"),compound.getInteger("dY"),compound.getInteger("dZ")).add(getPos()));
+			master = (TileEntityVaporizer) world.getTileEntity(new BlockPos(compound.getInteger("dX"),compound.getInteger("dY"),compound.getInteger("dZ")).add(getPos()));
 		}
 	}
 	
@@ -172,6 +172,11 @@ public class TileEntityCondensor extends TileEntity implements ISidedInventory, 
 			comp.setInteger("dZ", dPos.getZ());
 		}
 		return new SPacketUpdateTileEntity(getPos(), 0, comp);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return master != null ? master.isEmpty() : false;
 	}
 	
 	

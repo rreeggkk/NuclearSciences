@@ -7,15 +7,12 @@ import java.util.Map.Entry;
 import org.apfloat.Apfloat;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
@@ -34,11 +31,9 @@ import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.ItemStackUtil;
 import rreeggkk.nuclearsciences.common.util.NuclearMaterialUtil;
 
-public class TileEntityFuelPacker extends TileEntity implements ISidedInventory, ITickable {
+public class TileEntityFuelPacker extends TileEntityNSInventory implements ISidedInventory, ITickable {
 
 	private IntEnergyContainer energy;
-
-	private ItemStack[] inventory = new ItemStack[3];
 
 	private int currentEnergy;
 	private ItemStack output;
@@ -49,12 +44,13 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 	public TileEntityFuelPacker() {
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
+		inventory = new ItemStack[3];
 	}
 
 	@Override
 	public void update() {
-		if (!worldObj.isRemote) {
-			if (output == null && inventory[0] != null && inventory[0].getItem() == ModItems.nuclearMaterial && fuelType != null) {
+		if (!world.isRemote) {
+			if (output.isEmpty() && !inventory[0].isEmpty() && inventory[0].getItem() == ModItems.nuclearMaterial && fuelType != null) {
 				if (ModItems.nuclearMaterial.getTotalMass(inventory[0]).compareTo(fuelType.getGramsPerComponent()) >= 0) {
 					if (eatExtraInput()) {
 						energyNeeded = NuclearSciences.instance.config.fuelPackerEnergyPerPack;
@@ -65,27 +61,27 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 						inventory[0] = outputs[0];
 						if (!running){
 							running = true;
-							worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+							world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 						}
 					} else if (running) {
 						running = false;
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+						world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 					}
 				} else {
 					energyNeeded = 0;
 					currentEnergy = 0;
 
 					output = inventory[0];
-					inventory[0] = null;
-					if (worldObj.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
-						worldObj.setBlockState(pos, worldObj.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
+					inventory[0] = ItemStack.EMPTY;
+					if (world.getBlockState(pos).getValue(BlockFuelPacker.RUNNING)){
+						world.setBlockState(pos, world.getBlockState(pos).withProperty(BlockFuelPacker.RUNNING, false), 2);
 					}
 				}
 			} else if (running) {
 				running = false;
-				worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+				world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 			}
-			if (output != null) {
+			if (!output.isEmpty()) {
 				if (currentEnergy < energyNeeded) {
 					int desiredEn = (int) Math.round(getMaxRunFraction() * getMaxEnergyPerTick());
 					if (desiredEn > energy.getStored()) {
@@ -99,15 +95,15 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 				}
 
 				if (currentEnergy >= energyNeeded) {
-					if (inventory[1] == null || inventory[1].stackSize == 0) {
+					if (inventory[1].isEmpty() || inventory[1].getCount() == 0) {
 						inventory[1] = output.copy();
-						output = null;
-					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output) && inventory[1].stackSize + output.stackSize <= 64) {
-						inventory[1].stackSize += output.stackSize;
-						output = null;
+						output = ItemStack.EMPTY;
+					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output) && inventory[1].getCount() + output.getCount() <= 64) {
+						inventory[1].setCount(inventory[1].getCount() + output.getCount());
+						output = ItemStack.EMPTY;
 					} else if (running) {
 						running = false;
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+						world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 					}
 				}
 			}
@@ -115,7 +111,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	}
 
 	public int getFixedCompletion(int point) {
-		if (output == null) {
+		if (output.isEmpty()) {
 			return 0;
 		}
 		return (int) ((double)currentEnergy/energyNeeded * Math.pow(10, point));
@@ -141,7 +137,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 		boolean sameOut = false;
 
-		if (tryFit != null && fuelType != null && tryFit.getItem() == fuelType.getOutputItem().getItem() && tryFit.getItemDamage() == fuelType.getOutputItem().getItemDamage() && NuclearMaterialUtil.areCloseEnough(newContents, ModItems.nuclearFuel.getContentsMass(tryFit))) {
+		if (!tryFit.isEmpty() && fuelType != null && tryFit.getItem() == fuelType.getOutputItem().getItem() && tryFit.getItemDamage() == fuelType.getOutputItem().getItemDamage() && NuclearMaterialUtil.areCloseEnough(newContents, ModItems.nuclearFuel.getContentsMass(tryFit))) {
 			newContents = ModItems.nuclearFuel.getContentsMass(tryFit);
 			sameOut = true;
 		}
@@ -158,7 +154,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 		if (sameOut) {
 			output[1] = tryFit.copy();
-			output[1].stackSize = 1;
+			output[1].setCount(1);;
 		} else {
 			output[1] = fuelType.getOutputItem().copy();
 			ModItems.nuclearFuel.setContentsMass(output[1], newContents);
@@ -173,10 +169,10 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 			return true;
 		} else {
 			if (ItemStackUtil.areItemStacksEqual(fuelType.getInputItem(), inventory[2])) {
-				if (inventory[2].stackSize >= fuelType.getInputItem().stackSize) {
-					inventory[2].splitStack(fuelType.getInputItem().stackSize);
-					if (inventory[2].stackSize == 0) {
-						inventory[2] = null;
+				if (inventory[2].getCount() >= fuelType.getInputItem().getCount()) {
+					inventory[2].splitStack(fuelType.getInputItem().getCount());
+					if (inventory[2].getCount() == 0) {
+						inventory[2] = ItemStack.EMPTY;
 					}
 					return true;
 				} else {
@@ -200,7 +196,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 			if (j >= 0 && j < this.inventory.length)
 			{
-				this.inventory[j] = ItemStack.loadItemStackFromNBT(nbttagcompound);
+				this.inventory[j] = new ItemStack(nbttagcompound);
 			}
 		}
 
@@ -211,10 +207,12 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 		}
 
 		if (compound.hasKey("Processing")) {
-			output = ItemStack.loadItemStackFromNBT(compound.getCompoundTag("POutput"));
+			output = new ItemStack(compound.getCompoundTag("POutput"));
 
 			currentEnergy = compound.getInteger("PEnergy");
 			energyNeeded = compound.getInteger("NEnergy");
+		} else {
+			output = ItemStack.EMPTY;
 		}
 	}
 
@@ -239,7 +237,7 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 			compound.setString("FuelType", fuelType.getUID());
 		}
 
-		if (output != null) {
+		if (!output.isEmpty()) {
 			compound.setBoolean("Processing", true);
 
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
@@ -252,48 +250,6 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 
 		return compound;
 	}
-	@Override
-	public int getSizeInventory() {
-		return inventory.length;
-	}
-
-	@Override
-	public ItemStack getStackInSlot(int index) {
-		return inventory[index];
-	}
-
-	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		return ItemStackHelper.getAndSplit(inventory, index, count);
-	}
-
-	@Override
-	public ItemStack removeStackFromSlot(int index) {
-		ItemStack temp = inventory[index];
-		inventory[index] = null;
-		return temp;
-	}
-
-	@Override
-	public void setInventorySlotContents(int index, ItemStack stack) {
-		inventory[index] = stack;
-	}
-
-	@Override
-	public int getInventoryStackLimit() {
-		return 1;
-	}
-
-	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
-	}
-
-	@Override
-	public void openInventory(EntityPlayer player) {}
-
-	@Override
-	public void closeInventory(EntityPlayer player) {}
 
 	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
@@ -301,31 +257,8 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	}
 
 	@Override
-	public int getField(int id) {
-		return 0;
-	}
-
-	@Override
-	public void setField(int id, int value) {}
-
-	@Override
-	public int getFieldCount() {
-		return 0;
-	}
-
-	@Override
-	public void clear() {
-		inventory = new ItemStack[inventory.length];
-	}
-
-	@Override
 	public String getName() {
 		return "container.nuclearsciences.fuelpacker.name";
-	}
-
-	@Override
-	public boolean hasCustomName() {
-		return false;
 	}
 
 	@Override
@@ -393,6 +326,6 @@ public class TileEntityFuelPacker extends TileEntity implements ISidedInventory,
 	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
 		NBTTagCompound nbt = pkt.getNbtCompound();
 		running = nbt.getBoolean("Running");
-		worldObj.markBlockRangeForRenderUpdate(pos, pos);
+		world.markBlockRangeForRenderUpdate(pos, pos);
 	}
 }

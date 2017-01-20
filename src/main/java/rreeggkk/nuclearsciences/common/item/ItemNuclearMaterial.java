@@ -16,6 +16,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.NonNullList;
 import net.minecraftforge.common.util.Constants.NBT;
 import rreeggkk.nuclearsciences.common.Constants;
 import rreeggkk.nuclearsciences.common.crafting.hydraulic.RadioactiveStoneHydraulicRecipe;
@@ -92,7 +93,7 @@ public class ItemNuclearMaterial extends ItemNSBase {
 	}
 
 	public ItemStack setContents(ItemStack stack, HashMap<String, Apfloat> data) {
-		if (stack.getItem() != this) return null;
+		if (stack.getItem() != this) return ItemStack.EMPTY;
 
 		NBTTagCompound compound = stack.getTagCompound();
 		if (compound == null) {
@@ -220,7 +221,7 @@ public class ItemNuclearMaterial extends ItemNSBase {
 	}
 
 	@Override
-	public void getSubItems(Item itemIn, CreativeTabs tab, List<ItemStack> subItems) {
+	public void getSubItems(Item itemIn, CreativeTabs tab, NonNullList<ItemStack> subItems) {
 		for (Entry<NuclearOreType, Double> e : RadioactiveStoneHydraulicRecipe.oreTypes.entrySet()) {
 			HashMap<String, Apfloat> contents = new HashMap<>();
 

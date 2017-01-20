@@ -1,15 +1,12 @@
 package rreeggkk.nuclearsciences.common.tile;
 
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
@@ -24,12 +21,10 @@ import rreeggkk.nuclearsciences.common.fluid.SingleFluidTank;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.ItemStackUtil;
 
-public class TileEntityHydraulicSeparator extends TileEntity implements ISidedInventory, ITickable {
+public class TileEntityHydraulicSeparator extends TileEntityNSInventory implements ISidedInventory, ITickable {
 
 	private SingleFluidTank tank;
 	private IntEnergyContainer energy;
-
-	private ItemStack[] inventory = new ItemStack[2];
 
 	private int currentEnergy;
 	private int currentWater;
@@ -42,16 +37,17 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	public TileEntityHydraulicSeparator() {
 		tank = new SingleFluidTank(FluidRegistry.WATER, 8000);
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
+		inventory = new ItemStack[2];
 	}
 
 	@Override
 	public void update() {
 
-		if (!worldObj.isRemote) {
-			if (output == null) {
-				if (inventory[0] != null) {
+		if (!world.isRemote) {
+			if (output.isEmpty()) {
+				if (!inventory[0].isEmpty()) {
 					IHydraulicRecipe recipe = HydraulicSeparatorCraftingHandler.instance.getRecipeForInput(inventory[0]);
-					if (recipe != null && recipe.getInputAmount(inventory[0]) <= inventory[0].stackSize) {
+					if (recipe != null && recipe.getInputAmount(inventory[0]) <= inventory[0].getCount()) {
 						//processingRecipe = recipe;
 						currentEnergy = 0;
 						currentWater = 0;
@@ -59,20 +55,20 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 						waterNeeded = recipe.getRequiredWater();
 						output = recipe.getResult(inventory[0]);
 						inventory[0].splitStack(recipe.getInputAmount(inventory[0]));
-						if (inventory[0].stackSize == 0) {
-							inventory[0] = null;
+						if (inventory[0].getCount() == 0) {
+							inventory[0] = ItemStack.EMPTY;
 						}
 						if (!running) {
 							running = true;
-							worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+							world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 						}
 					}
 				} else if (running) {
 					running = false;
-					worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+					world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 				}
 			}
-			if (output != null) {
+			if (!output.isEmpty()) {
 				if (!(currentEnergy >= energyNeeded && currentWater >= waterNeeded)) {
 					int desiredEn = (int) Math.round(getMaxRunFraction() * getMaxEnergyPerTick());
 					if (desiredEn > energy.getStored()) {
@@ -95,15 +91,15 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 				}
 
 				if (currentEnergy >= energyNeeded && currentWater >= waterNeeded) {
-					if (inventory[1] == null || inventory[1].stackSize == 0) {
+					if (inventory[1].isEmpty() || inventory[1].getCount() == 0) {
 						inventory[1] = output.copy();
-						output = null;
+						output = ItemStack.EMPTY;
 					} else if (ItemStackUtil.areItemStacksEqual(inventory[1], output)) {
-						inventory[1].stackSize += output.stackSize;
-						output = null;
+						inventory[1].setCount(inventory[1].getCount() + output.getCount());
+						output = ItemStack.EMPTY;
 					} else if (running) {
 						running = false;
-						worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 3);
+						world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
 					}
 				}
 			}
@@ -111,7 +107,7 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	}
 
 	public int getFixedCompletion(int point) {
-		if (output == null) {
+		if (output.isEmpty()) {
 			return 0;
 		}
 		return (int) ((double)currentEnergy/energyNeeded * Math.pow(10, point));
@@ -141,7 +137,7 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 
 			if (j >= 0 && j < this.inventory.length)
 			{
-				this.inventory[j] = ItemStack.loadItemStackFromNBT(nbttagcompound);
+				this.inventory[j] = new ItemStack(nbttagcompound);
 			}
 		}
 
@@ -149,12 +145,14 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 		tank.readFromNBT(compound.getCompoundTag("Fluid"));
 
 		if (compound.hasKey("Processing")) {
-			output = ItemStack.loadItemStackFromNBT(compound.getCompoundTag("POutput"));
+			output = new ItemStack(compound.getCompoundTag("POutput"));
 
 			currentEnergy = compound.getInteger("PEnergy");
 			currentWater = compound.getInteger("PWater");
 			energyNeeded = compound.getInteger("NEnergy");
 			waterNeeded = compound.getInteger("NWater");
+		} else {
+			output = ItemStack.EMPTY;
 		}
 	}
 
@@ -177,7 +175,7 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 		compound.setTag("Energy", energy.serializeNBT());
 		compound.setTag("Fluid", tank.writeToNBT(new NBTTagCompound()));
 
-		if (output != null) {
+		if (!output.isEmpty()) {
 			compound.setBoolean("Processing", true);
 
 			NBTTagCompound nbttagcompound = new NBTTagCompound();
@@ -192,48 +190,6 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 
 		return compound;
 	}
-	@Override
-	public int getSizeInventory() {
-		return inventory.length;
-	}
-
-	@Override
-	public ItemStack getStackInSlot(int index) {
-		return inventory[index];
-	}
-
-	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		return ItemStackHelper.getAndSplit(inventory, index, count);
-	}
-
-	@Override
-	public ItemStack removeStackFromSlot(int index) {
-		ItemStack temp = inventory[index];
-		inventory[index] = null;
-		return temp;
-	}
-
-	@Override
-	public void setInventorySlotContents(int index, ItemStack stack) {
-		inventory[index] = stack;
-	}
-
-	@Override
-	public int getInventoryStackLimit() {
-		return 64;
-	}
-
-	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
-	}
-
-	@Override
-	public void openInventory(EntityPlayer player) {}
-
-	@Override
-	public void closeInventory(EntityPlayer player) {}
 
 	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
@@ -241,31 +197,8 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	}
 
 	@Override
-	public int getField(int id) {
-		return 0;
-	}
-
-	@Override
-	public void setField(int id, int value) {}
-
-	@Override
-	public int getFieldCount() {
-		return 0;
-	}
-
-	@Override
-	public void clear() {
-		inventory = new ItemStack[inventory.length];
-	}
-
-	@Override
 	public String getName() {
 		return "container.nuclearsciences.hydraulicseparator.name";
-	}
-
-	@Override
-	public boolean hasCustomName() {
-		return false;
 	}
 
 	@Override
@@ -328,6 +261,6 @@ public class TileEntityHydraulicSeparator extends TileEntity implements ISidedIn
 	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
 		NBTTagCompound nbt = pkt.getNbtCompound();
 		running = nbt.getBoolean("Running");
-		worldObj.markBlockRangeForRenderUpdate(pos, pos);
+		world.markBlockRangeForRenderUpdate(pos, pos);
 	}
 }

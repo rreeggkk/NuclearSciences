@@ -13,13 +13,11 @@ import org.apfloat.ApfloatMath;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
-import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.BlockPos;
@@ -32,14 +30,13 @@ import rreeggkk.nuclearsciences.common.energy.IntEnergyContainer;
 import rreeggkk.nuclearsciences.common.item.ModItems;
 import rreeggkk.nuclearsciences.common.nuclear.element.AIsotope;
 import rreeggkk.nuclearsciences.common.nuclear.registry.IsotopeRegistry;
+import rreeggkk.nuclearsciences.common.tile.TileEntityNSInventory;
 import rreeggkk.nuclearsciences.common.util.CapabilityUtil;
 import rreeggkk.nuclearsciences.common.util.NuclearMaterialUtil;
 
-public class TileEntityVaporizer extends TileEntity implements ITickable, ISidedInventory, IGasCentrifugeTile {
+public class TileEntityVaporizer extends TileEntityNSInventory implements ITickable, ISidedInventory, IGasCentrifugeTile {
 
 	private IntEnergyContainer energy;
-
-	private ItemStack[] inventory = new ItemStack[3];
 
 	private List<TileEntityCentrifuge> centrifuges = new ArrayList<TileEntityCentrifuge>();
 	private TileEntityCondensor lightCondensor, heavyCondensor; 
@@ -52,16 +49,17 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 	public TileEntityVaporizer() {
 		energy = new IntEnergyContainer(0, 0, false);
+		inventory = new ItemStack[3];
 	}
 
 	@Override
 	public void update() {
-		if (!worldObj.isRemote) {
+		if (!world.isRemote) {
 			if (recalc) {
 				recalculateMultiblock();
 			}
 
-			if (inventory[0] != null && desiredIsotope != null && productAssay > 0 && tailsAssay > 0 && ModItems.nuclearMaterial.getContentsMass(inventory[0]).containsKey(desiredIsotope)) {
+			if (!inventory[0].isEmpty() && desiredIsotope != null && productAssay > 0 && tailsAssay > 0 && ModItems.nuclearMaterial.getContentsMass(inventory[0]).containsKey(desiredIsotope)) {
 				Apfloat feedMass = ModItems.nuclearMaterial.getTotalMass(inventory[0]).precision(Constants.PRECISION);
 				Apfloat feedAssay = ModItems.nuclearMaterial.getContentsMass(inventory[0]).get(desiredIsotope).divide(feedMass).precision(Constants.PRECISION);
 
@@ -100,17 +98,17 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 				NuclearMaterialUtil.calculateOutputs(feedContents, feed, feedMass, productContents, tailsContents, desiredIsotope, productAssay/10000d, tailsAssay/10000d, product, tail);
 
 				if (removeStack) {
-					inventory[0] = null;
+					inventory[0] = ItemStack.EMPTY;
 				} else {
 					ModItems.nuclearMaterial.setContentsMass(inventory[0], feedContents);
 				}
 
-				if (inventory[1] == null) {
+				if (inventory[1].isEmpty()) {
 					inventory[1] = new ItemStack(ModItems.nuclearMaterial);
 				}
 				ModItems.nuclearMaterial.setContentsMass(inventory[1], NuclearMaterialUtil.sumMassMaps(productContents, ModItems.nuclearMaterial.getContentsMass(inventory[1])));
 
-				if (inventory[2] == null) {
+				if (inventory[2].isEmpty()) {
 					inventory[2] = new ItemStack(ModItems.nuclearMaterial);
 				}
 				ModItems.nuclearMaterial.setContentsMass(inventory[2], NuclearMaterialUtil.sumMassMaps(tailsContents, ModItems.nuclearMaterial.getContentsMass(inventory[2])));
@@ -140,31 +138,31 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		while (!searchQueue.isEmpty()) {
 			BlockPos searchPos = searchQueue.poll();
 
-			IBlockState state = worldObj.getBlockState(searchPos);
+			IBlockState state = world.getBlockState(searchPos);
 
 			if (state.getBlock() == ModBlocks.centrifuge) {
 
-				if (centrifuges.contains((TileEntityCentrifuge) worldObj.getTileEntity(searchPos))) {
+				if (centrifuges.contains((TileEntityCentrifuge) world.getTileEntity(searchPos))) {
 					continue;
 				}
 
-				TileEntityCentrifuge centrif = (TileEntityCentrifuge) worldObj.getTileEntity(searchPos);
+				TileEntityCentrifuge centrif = (TileEntityCentrifuge) world.getTileEntity(searchPos);
 				centrif.setMaster(this);
 				centrifuges.add(centrif);
 
 				BlockPos right = ModBlocks.centrifuge.getRightOf(state, searchPos);
-				if (worldObj.getBlockState(right).getBlock() == ModBlocks.centrifuge) {
+				if (world.getBlockState(right).getBlock() == ModBlocks.centrifuge) {
 					searchQueue.offer(right);
-				} else if (worldObj.getBlockState(right).getBlock() == ModBlocks.condensor) {
-					heavyCondensor = (TileEntityCondensor)worldObj.getTileEntity(right);
+				} else if (world.getBlockState(right).getBlock() == ModBlocks.condensor) {
+					heavyCondensor = (TileEntityCondensor)world.getTileEntity(right);
 					heavyCondensor.setMaster(this);
 				}
 
 				BlockPos left = ModBlocks.centrifuge.getLeftOf(state, searchPos);
-				if (worldObj.getBlockState(left).getBlock() == ModBlocks.centrifuge) {
+				if (world.getBlockState(left).getBlock() == ModBlocks.centrifuge) {
 					searchQueue.offer(left);
-				} else if (worldObj.getBlockState(left).getBlock() == ModBlocks.condensor) {
-					lightCondensor = (TileEntityCondensor)worldObj.getTileEntity(left);
+				} else if (world.getBlockState(left).getBlock() == ModBlocks.condensor) {
+					lightCondensor = (TileEntityCondensor)world.getTileEntity(left);
 					lightCondensor.setMaster(this);
 				}
 			}
@@ -208,7 +206,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 			if (j >= 0 && j < this.inventory.length)
 			{
-				this.inventory[j] = ItemStack.loadItemStackFromNBT(nbttagcompound);
+				this.inventory[j] = new ItemStack(nbttagcompound);
 			}
 		}
 
@@ -244,32 +242,6 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		compound.setInteger("TailsAssay", tailsAssay);
 		return compound;
 	}
-	@Override
-	public int getSizeInventory() {
-		return inventory.length;
-	}
-
-	@Override
-	public ItemStack getStackInSlot(int index) {
-		return inventory[index];
-	}
-
-	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		return ItemStackHelper.getAndSplit(inventory, index, count);
-	}
-
-	@Override
-	public ItemStack removeStackFromSlot(int index) {
-		ItemStack temp = inventory[index];
-		inventory[index] = null;
-		return temp;
-	}
-
-	@Override
-	public void setInventorySlotContents(int index, ItemStack stack) {
-		inventory[index] = stack;
-	}
 
 	@Override
 	public int getInventoryStackLimit() {
@@ -277,32 +249,8 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 	}
 
 	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		return player.getDistanceSq(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64D;
-	}
-
-	@Override
-	public void openInventory(EntityPlayer player) {}
-
-	@Override
-	public void closeInventory(EntityPlayer player) {}
-
-	@Override
 	public boolean isItemValidForSlot(int index, ItemStack stack) {
 		return index == 0 && stack.getItem() == ModItems.nuclearMaterial && ModItems.nuclearMaterial.getContentsMass(stack).containsKey(desiredIsotope);
-	}
-
-	@Override
-	public int getField(int id) {
-		return 0;
-	}
-
-	@Override
-	public void setField(int id, int value) {}
-
-	@Override
-	public int getFieldCount() {
-		return 0;
 	}
 
 	@Override
@@ -403,7 +351,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		}
 		desiredIsotope = iso;
 
-		//worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		//world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 2);
 		//markDirty();
 	}
 
@@ -423,7 +371,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 		}
 		desiredIsotope = iso;
 
-		//worldObj.notifyBlockUpdate(pos, worldObj.getBlockState(pos), worldObj.getBlockState(pos), 2);
+		//world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 2);
 		//markDirty();
 	}
 
@@ -470,7 +418,7 @@ public class TileEntityVaporizer extends TileEntity implements ITickable, ISided
 
 	@Override
 	public boolean isUsable(EntityPlayer player) {
-		return isUseableByPlayer(player);
+		return isUsableByPlayer(player);
 	}
 
 	public AIsotope<?, ?> getDesiredIsotope() {

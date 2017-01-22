@@ -2,11 +2,11 @@
   "forge_marker": 1,
   "defaults": {
     "textures": {
-       "top": "nuclearsciences:blocks/chemicalSeparator_top",
-       "side": "nuclearsciences:blocks/chemicalSeparator_side",
-       "front": "nuclearsciences:blocks/chemicalSeparator_front_off"
+       "top": "nuclearsciences:blocks/chemicalseparator_top",
+       "side": "nuclearsciences:blocks/chemicalseparator_side",
+       "front": "nuclearsciences:blocks/chemicalseparator_front_off"
     },
-    "model": "nuclearsciences:topSideFrontBlock"
+    "model": "nuclearsciences:topsidefrontblock"
   },
   "variants": {
     "facing": {
@@ -18,7 +18,7 @@
     "running": {
       "true": {
         "textures": {
-          "front": "nuclearsciences:blocks/chemicalSeparator_front_on"
+          "front": "nuclearsciences:blocks/chemicalseparator_front_on"
         }
       },
       "false": {}

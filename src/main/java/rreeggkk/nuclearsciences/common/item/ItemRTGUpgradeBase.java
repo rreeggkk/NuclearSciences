@@ -11,7 +11,7 @@ public class ItemRTGUpgradeBase extends ItemMultiNSBase implements RTGUpgrade {
 	private double[] effs;
 	
 	public ItemRTGUpgradeBase(double[] effs, String[] names) {
-		super("rtgUpgrade", names);
+		super("rtgupgrade", names);
 		this.effs = effs;
 	}
 	

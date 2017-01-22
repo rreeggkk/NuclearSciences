@@ -45,6 +45,8 @@ public class TileEntityFuelPacker extends TileEntityNSInventory implements ISide
 	public TileEntityFuelPacker() {
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
 		inventory = new ItemStack[3];
+		clear();
+		output = ItemStack.EMPTY;
 	}
 
 	@Override

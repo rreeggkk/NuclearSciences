@@ -29,7 +29,7 @@ public class ItemNuclearFuel extends ItemMultiNSBase {
 	private FuelType[] fuelTypes;
 	
 	public ItemNuclearFuel(FuelType... fuelTypes) {
-		super("fuel", Arrays.asList(fuelTypes).stream().map((f)->f.getName()).collect(Collectors.toList()).toArray(new String[]{}));
+		super("fuel", Arrays.asList(fuelTypes).stream().map((f)->f.getName().toLowerCase()).collect(Collectors.toList()).toArray(new String[]{}));
 		
 		for (int i = 0; i<fuelTypes.length; i++) {
 			fuelTypes[i].setItem(new ItemStack(this, 1, i));

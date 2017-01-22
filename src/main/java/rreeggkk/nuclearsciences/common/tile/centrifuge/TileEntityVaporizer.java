@@ -50,6 +50,7 @@ public class TileEntityVaporizer extends TileEntityNSInventory implements ITicka
 	public TileEntityVaporizer() {
 		energy = new IntEnergyContainer(0, 0, false);
 		inventory = new ItemStack[3];
+		clear();
 	}
 
 	@Override

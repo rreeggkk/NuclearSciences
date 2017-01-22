@@ -6,7 +6,7 @@
        "bottom": "nuclearsciences:blocks/vaporizer_bottom",
        "side": "nuclearsciences:blocks/vaporizer_side"
     },
-    "model": "nuclearsciences:topSideBottomBlock"
+    "model": "nuclearsciences:topsidebottomblock"
   },
   "variants": {
     "normal": [{}],

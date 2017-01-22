@@ -38,6 +38,8 @@ public class TileEntityHydraulicSeparator extends TileEntityNSInventory implemen
 		tank = new SingleFluidTank(FluidRegistry.WATER, 8000);
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
 		inventory = new ItemStack[2];
+		clear();
+		output = ItemStack.EMPTY;
 	}
 
 	@Override
@@ -252,7 +254,6 @@ public class TileEntityHydraulicSeparator extends TileEntityNSInventory implemen
 	@Override
 	public SPacketUpdateTileEntity getUpdatePacket() {
 		NBTTagCompound nbt = new NBTTagCompound();
-		System.out.println("updatePacket");
 		nbt.setBoolean("Running", running);
 		return new SPacketUpdateTileEntity(getPos(), 0, nbt);
 	}

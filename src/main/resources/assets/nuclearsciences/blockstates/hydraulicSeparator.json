@@ -2,13 +2,14 @@
   "forge_marker": 1,
   "defaults": {
     "textures": {
-       "top": "nuclearsciences:blocks/hydraulicSeparator_top",
-       "side": "nuclearsciences:blocks/hydraulicSeparator_side",
-       "front": "nuclearsciences:blocks/hydraulicSeparator_front_off"
+       "top": "nuclearsciences:blocks/hydraulicseparator_top",
+       "side": "nuclearsciences:blocks/hydraulicseparator_side",
+       "front": "nuclearsciences:blocks/hydraulicseparator_front_off"
     },
-    "model": "nuclearsciences:topSideFrontBlock"
+    "model": "nuclearsciences:topsidefrontblock"
   },
   "variants": {
+    "inventory": [{}],
     "facing": {
       "north": {},
       "south": { "y": 180 },
@@ -18,11 +19,10 @@
     "running": {
       "true": {
         "textures": {
-          "front": "nuclearsciences:blocks/hydraulicSeparator_front_on"
+          "front": "nuclearsciences:blocks/hydraulicseparator_front_on"
         }
       },
       "false": {}
-    },
-    "inventory": [{}]
+    }
   }
 }

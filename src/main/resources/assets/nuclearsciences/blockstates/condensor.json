@@ -6,7 +6,7 @@
        "bottom": "nuclearsciences:blocks/condensor_bottom",
        "side": "nuclearsciences:blocks/condensor_side"
     },
-    "model": "nuclearsciences:topSideBottomBlock"
+    "model": "nuclearsciences:topsidebottomblock"
   },
   "variants": {
     "normal": [{}],

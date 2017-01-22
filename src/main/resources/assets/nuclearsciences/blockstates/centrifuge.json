@@ -5,7 +5,7 @@
        "main": "nuclearsciences:blocks/centrifuge",
        "pipe": "nuclearsciences:blocks/centrifuge_pipe"
     },
-    "model": "nuclearsciences:centrifugeMainSection"
+    "model": "nuclearsciences:centrifugemainsection"
   },
   "variants": {
     "facing": {
@@ -16,13 +16,13 @@
     },
     "right": {
       "true": {
-        "submodel": "nuclearsciences:pipeInputRight"
+        "submodel": "nuclearsciences:pipeinputright"
       },
       "false": {}
     },
     "left": {
       "true": {
-         "submodel": "nuclearsciences:pipeInputLeft"
+         "submodel": "nuclearsciences:pipeinputleft"
       },
       "false": {}
     },

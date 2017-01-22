@@ -43,6 +43,8 @@ public class TileEntityChemicalSeparator extends TileEntityNSInventory implement
 	public TileEntityChemicalSeparator() {
 		energy = new IntEnergyContainer(5000, 5000, 80, false);
 		inventory = new ItemStack[2];
+		clear();
+		output = ItemStack.EMPTY;
 	}
 
 	@Override
